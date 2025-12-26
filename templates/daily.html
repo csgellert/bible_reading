@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}{{ date_display }} - Bibliaolvasási Terv{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Fő tartalom -->
+    <div class="col-lg-8">
+        <!-- Navigáció és dátum -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                {% if prev_date %}
+                <a href="{{ url_for('bible.daily', date_str=prev_date) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-chevron-left"></i> Előző
+                </a>
+                {% endif %}
+            </div>
+            
+            <div class="text-center">
+                <h2 class="mb-0">
+                    <i class="bi bi-calendar-event text-primary"></i>
+                    {{ date_display }}
+                </h2>
+                {% if date_str == today %}
+                <span class="badge bg-success">Ma</span>
+                {% endif %}
+            </div>
+            
+            <div>
+                {% if next_date %}
+                <a href="{{ url_for('bible.daily', date_str=next_date) }}" class="btn btn-outline-secondary">
+                    Következő <i class="bi bi-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Olvasási szakaszok -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-book"></i> Mai olvasmányok
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if readings %}
+                    {% if readings.get('ot') %}
+                    <div class="reading-section mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0"><i class="bi bi-bookmark"></i> Ószövetség</h6>
+                            <button class="btn btn-sm btn-outline-primary toggle-text" data-target="ot-text">
+                                <i class="bi bi-eye"></i> Szöveg
+                            </button>
+                        </div>
+                        <p class="lead mb-2">{{ readings.ot }}</p>
+                        <div class="bible-text collapse show" id="ot-text">
+                            <div class="bible-content p-3 bg-light rounded" data-book="1Móz">
+                                <span class="verse" data-verse="1"><sup class="verse-num">1</sup>Kezdetben teremtette Isten az eget és a földet.</span> <span class="verse" data-verse="2"><sup class="verse-num">2</sup>A föld még kietlen és puszta volt, sötétség volt a mélység felett, és Isten Lelke lebegett a vizek felett.</span> <span class="verse" data-verse="3"><sup class="verse-num">3</sup>Akkor ezt mondta Isten: Legyen világosság! És lett világosság.</span> <span class="verse" data-verse="4"><sup class="verse-num">4</sup>Látta Isten, hogy a világosság jó, és elválasztotta Isten a világosságot a sötétségtől.</span> <span class="verse" data-verse="5"><sup class="verse-num">5</sup>A világosságot nappalnak nevezte Isten, a sötétséget pedig éjszakának nevezte. Így lett este, és lett reggel: első nap.</span>
+                                <br><br>
+                                <span class="verse" data-verse="6"><sup class="verse-num">6</sup>Azután ezt mondta Isten: Legyen boltozat a vizek között, és válassza el egymástól a vizeket.</span> <span class="verse" data-verse="7"><sup class="verse-num">7</sup>Megalkotta tehát Isten a boltozatot, és elválasztotta a boltozat alatti vizeket a boltozat feletti vizektől. És úgy történt.</span> <span class="verse" data-verse="8"><sup class="verse-num">8</sup>Égnek nevezte el Isten a boltozatot. Így lett este, és lett reggel: második nap.</span>
+                                <br><br>
+                                <span class="verse" data-verse="9"><sup class="verse-num">9</sup>Azután ezt mondta Isten: Gyűljenek össze az ég alatti vizek egy helyre, és jelenjen meg a száraz. És úgy történt.</span> <span class="verse" data-verse="10"><sup class="verse-num">10</sup>A szárazat földnek nevezte Isten, az összegyűlt vizeket pedig tengernek nevezte. És látta Isten, hogy ez jó.</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if readings.get('nt') %}
+                    <div class="reading-section mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0"><i class="bi bi-bookmark-fill"></i> Újszövetség</h6>
+                            <button class="btn btn-sm btn-outline-primary toggle-text" data-target="nt-text">
+                                <i class="bi bi-eye"></i> Szöveg
+                            </button>
+                        </div>
+                        <p class="lead mb-2">{{ readings.nt }}</p>
+                        <div class="bible-text collapse show" id="nt-text">
+                            <div class="bible-content p-3 bg-light rounded" data-book="Mt">
+                                <span class="verse" data-verse="1"><sup class="verse-num">1</sup>Jézus Krisztusnak, Dávid fiának, Ábrahám fiának nemzetségkönyve.</span> <span class="verse" data-verse="2"><sup class="verse-num">2</sup>Ábrahám fia volt Izsák, Izsák fia Jákób, Jákób fiai pedig Júda és testvérei.</span> <span class="verse" data-verse="3"><sup class="verse-num">3</sup>Júda fia volt Fáresz és Zerah, Támártól. Fáresz fia volt Heszrón, Heszrón fia Arám.</span> <span class="verse" data-verse="4"><sup class="verse-num">4</sup>Arám fia volt Ammínádáb, Ammínádáb fia Nahson, Nahson fia Szalmón.</span>
+                                <br><br>
+                                <span class="verse" data-verse="5"><sup class="verse-num">5</sup>Szalmón fia volt Boáz, Ráhábtól. Boáz fia Óbéd, Ruthtól. Óbéd fia Isai.</span> <span class="verse" data-verse="6"><sup class="verse-num">6</sup>Isai fia volt Dávid király. Dávid fia volt Salamon, Úriás feleségétől.</span> <span class="verse" data-verse="7"><sup class="verse-num">7</sup>Salamon fia volt Roboám, Roboám fia Abijjá, Abijjá fia Ászá.</span>
+                                <br><br>
+                                <span class="verse" data-verse="8"><sup class="verse-num">8</sup>Ászá fia volt Jósáfát, Jósáfát fia Jórám, Jórám fia Uzzijjá.</span> <span class="verse" data-verse="9"><sup class="verse-num">9</sup>Uzzijjá fia volt Jótám, Jótám fia Áház, Áház fia Ezékiás.</span> <span class="verse" data-verse="10"><sup class="verse-num">10</sup>Ezékiás fia volt Manassé, Manassé fia Ámón, Ámón fia Jósiás.</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if readings.get('ps') %}
+                    <div class="reading-section mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0"><i class="bi bi-music-note"></i> Zsoltár</h6>
+                            <button class="btn btn-sm btn-outline-primary toggle-text" data-target="ps-text">
+                                <i class="bi bi-eye"></i> Szöveg
+                            </button>
+                        </div>
+                        <p class="lead mb-2">{{ readings.ps }}</p>
+                        <div class="bible-text collapse show" id="ps-text">
+                            <div class="bible-content p-3 bg-light rounded" data-book="Zsolt">
+                                <span class="verse" data-verse="1"><sup class="verse-num">1</sup>Boldog ember az, aki nem jár a bűnösök tanácsa szerint, nem áll a vétkesek útjára, és nem ül a csúfolódók székére,</span> <span class="verse" data-verse="2"><sup class="verse-num">2</sup>hanem az ÚR törvényében gyönyörködik, és az ő törvényéről elmélkedik éjjel-nappal.</span>
+                                <br><br>
+                                <span class="verse" data-verse="3"><sup class="verse-num">3</sup>Olyan lesz, mint a folyóvíz mellé ültetett fa, amely idejében megtermi gyümölcsét, és nem hervad el a lombja. Minden sikerül, amit tesz.</span> <span class="verse" data-verse="4"><sup class="verse-num">4</sup>Nem így járnak a bűnösök, hanem úgy, mint a polyva, amelyet szétszór a szél.</span>
+                                <br><br>
+                                <span class="verse" data-verse="5"><sup class="verse-num">5</sup>Ezért nem állhatnak meg a bűnösök az ítélet idején és a vétkesek az igazak közösségében.</span> <span class="verse" data-verse="6"><sup class="verse-num">6</sup>Mert ismeri az ÚR az igazak útját, a bűnösök útja pedig semmibe vész.</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if readings.get('pr') %}
+                    <div class="reading-section mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Példabeszédek</h6>
+                            <button class="btn btn-sm btn-outline-primary toggle-text" data-target="pr-text">
+                                <i class="bi bi-eye"></i> Szöveg
+                            </button>
+                        </div>
+                        <p class="lead mb-2">{{ readings.pr }}</p>
+                        <div class="bible-text collapse show" id="pr-text">
+                            <div class="bible-content p-3 bg-light rounded" data-book="Péld">
+                                <span class="verse" data-verse="1"><sup class="verse-num">1</sup>Salamonnak, Dávid fiának, Izráel királyának példabeszédei.</span> <span class="verse" data-verse="2"><sup class="verse-num">2</sup>Azért adattak, hogy bölcsességet és fegyelmet tanuljunk, és megértsük az értelmes mondásokat.</span> <span class="verse" data-verse="3"><sup class="verse-num">3</sup>Hogy fegyelmezett és értelmes viselkedést tanuljunk, igazságosságot, törvényt és becsületet.</span>
+                                <br><br>
+                                <span class="verse" data-verse="4"><sup class="verse-num">4</sup>Hogy a tudatlanoknak okosságot adjanak, az ifjúnak ismeretet és meggondolást.</span> <span class="verse" data-verse="5"><sup class="verse-num">5</sup>Ha hallja ezeket a bölcs, gyarapodik a tudása, az értelmes ember megszívleli.</span>
+                                <br><br>
+                                <span class="verse" data-verse="6"><sup class="verse-num">6</sup>Megérti a példázatot és az elrejtett mondást, a bölcsek szavait és találós kérdéseit.</span> <span class="verse" data-verse="7"><sup class="verse-num">7</sup>Az ÚRnak félelme az ismeret kezdete, de a balgák megvetik a bölcsességet és a fegyelmet.</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted">Erre a napra nincs olvasmány megadva.</p>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <button class="btn {{ 'btn-success' if is_read else 'btn-outline-success' }}" 
+                        id="markReadBtn"
+                        data-date="{{ date_str }}"
+                        data-read="{{ 'true' if is_read else 'false' }}">
+                    <i class="bi {{ 'bi-check-circle-fill' if is_read else 'bi-circle' }}"></i>
+                    {{ 'Elolvasva ✓' if is_read else 'Megjelölés olvasottként' }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Kiemelések -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-highlighter"></i> Kiemelések
+                    <small class="ms-2 fw-normal">(Jelölj ki szöveget a Bibliából!)</small>
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Kijelölésből származó kiemelés - alapból rejtett -->
+                <div id="selectionHighlight" class="alert alert-warning d-none mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong id="selectedVerseRef"></strong>
+                            <p id="selectedText" class="mb-0 fst-italic"></p>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-warning btn-sm" id="confirmHighlight">
+                                <i class="bi bi-highlighter"></i> Kiemelés mentése
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="cancelHighlight">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kézi kiemelés form - összecsukható -->
+                <div class="mb-3">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#manualHighlightForm">
+                        <i class="bi bi-pencil"></i> Kézi kiemelés hozzáadása
+                    </button>
+                </div>
+                <form id="highlightForm" class="collapse mb-3" id="manualHighlightForm">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="highlightVerse" 
+                                   placeholder="Vers (pl. Jn 3:16)">
+                        </div>
+                        <div class="col-md-7">
+                            <input type="text" class="form-control" id="highlightText" 
+                                   placeholder="Kiemelt szöveg..." required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-warning w-100">
+                                <i class="bi bi-plus"></i> Hozzáad
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Kiemelések listája -->
+                <div id="highlightsList">
+                    {% for highlight in highlights %}
+                    <div class="highlight-item p-2 mb-2 rounded" 
+                         style="background-color: rgba(255, 193, 7, 0.2);"
+                         data-id="{{ highlight.id }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                {% if highlight.verse_ref %}
+                                <strong class="text-primary">{{ highlight.verse_ref }}:</strong>
+                                {% endif %}
+                                <span>"{{ highlight.text }}"</span>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="bi bi-person"></i> {{ highlight.user_name }}
+                                </small>
+                            </div>
+                            {% if highlight.user_id == session.user_id %}
+                            <button class="btn btn-sm btn-outline-danger delete-highlight" 
+                                    data-id="{{ highlight.id }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0" id="noHighlights">Még nincsenek kiemelések.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Kommentek -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-chat-dots"></i> Gondolatok és megjegyzések
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Új komment form -->
+                <form id="commentForm" class="mb-4">
+                    <div class="mb-2">
+                        <input type="text" class="form-control" id="commentVerse" 
+                               placeholder="Vers hivatkozás (opcionális, pl. Mt 5:3-12)">
+                    </div>
+                    <div class="mb-2">
+                        <textarea class="form-control" id="commentContent" rows="3" 
+                                  placeholder="Írd le a gondolataidat..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-info text-white">
+                        <i class="bi bi-send"></i> Küldés
+                    </button>
+                </form>
+
+                <!-- Kommentek listája -->
+                <div id="commentsList">
+                    {% for comment in comments %}
+                    <div class="comment-item p-3 mb-3 border rounded" data-id="{{ comment.id }}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <strong class="text-primary">
+                                    <i class="bi bi-person-circle"></i> {{ comment.user_name }}
+                                </strong>
+                                {% if comment.verse_ref %}
+                                <span class="badge bg-secondary ms-2">{{ comment.verse_ref }}</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <small class="text-muted">{{ comment.created_at }}</small>
+                                {% if comment.user_id == session.user_id %}
+                                <button class="btn btn-sm btn-outline-danger ms-2 delete-comment" 
+                                        data-id="{{ comment.id }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p class="mb-0">{{ comment.content }}</p>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0" id="noComments">
+                        Még nincsenek gondolatok megosztva. Légy te az első!
+                    </p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oldalsáv -->
+    <div class="col-lg-4">
+        <!-- Ugrás napra -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-calendar"></i> Ugrás napra</h6>
+            </div>
+            <div class="card-body">
+                <form id="jumpToDateForm">
+                    <div class="input-group">
+                        <select class="form-select" id="jumpMonth">
+                            <option value="01">Január</option>
+                            <option value="02">Február</option>
+                            <option value="03">Március</option>
+                            <option value="04">Április</option>
+                            <option value="05">Május</option>
+                            <option value="06">Június</option>
+                            <option value="07">Július</option>
+                            <option value="08">Augusztus</option>
+                            <option value="09">Szeptember</option>
+                            <option value="10">Október</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                        <select class="form-select" id="jumpDay">
+                            {% for d in range(1, 32) %}
+                            <option value="{{ '%02d' % d }}">{{ d }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+                <div class="mt-2">
+                    <a href="{{ url_for('bible.daily') }}" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="bi bi-calendar-day"></i> Mai nap
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Felhasználóváltás -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-people"></i> Felhasználóváltás</h6>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('auth.switch_user') }}" method="POST">
+                    <div class="input-group">
+                        <select class="form-select" name="username">
+                            {% for user in users %}
+                            <option value="{{ user.name }}" 
+                                    {{ 'selected' if user.id == session.user_id else '' }}>
+                                {{ user.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </button>
+                    </div>
+                </form>
+                <small class="text-muted">
+                    Vagy <a href="{{ url_for('auth.logout') }}">jelentkezz ki</a> új névvel.
+                </small>
+            </div>
+        </div>
+
+        <!-- Gyors statisztika -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Naptár</h6>
+            </div>
+            <div class="card-body text-center">
+                <a href="{{ url_for('bible.calendar') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-calendar3"></i> Éves áttekintés
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Aktuális dátum beállítása a jump formban
+    const currentDate = "{{ date_str }}";
+    if (currentDate) {
+        const [month, day] = currentDate.split('-');
+        document.getElementById('jumpMonth').value = month;
+        document.getElementById('jumpDay').value = day;
+    }
+</script>
+{% endblock %}

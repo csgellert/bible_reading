@@ -1,0 +1,258 @@
+/* Bibliaolvasási Terv - Stílusok */
+
+/* Általános */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Kártyák */
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    font-weight: 500;
+}
+
+/* Olvasási szakaszok */
+.reading-section {
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #0d6efd;
+    border-radius: 4px;
+}
+
+.reading-section h6 {
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+.reading-section .lead {
+    margin-bottom: 0;
+    font-size: 1.1rem;
+}
+
+/* Bibliai szöveg megjelenítés */
+.bible-content {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    text-align: justify;
+    border-left: 3px solid #0d6efd;
+    max-height: 400px;
+    overflow-y: auto;
+    cursor: text;
+    user-select: text;
+}
+
+.bible-content .verse {
+    cursor: text;
+}
+
+.bible-content .verse:hover {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-radius: 2px;
+}
+
+.bible-content .verse::selection,
+.bible-content .verse *::selection {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.verse-num {
+    color: #0d6efd;
+    font-weight: bold;
+    font-size: 0.75rem;
+    margin-right: 2px;
+    vertical-align: super;
+    user-select: none;
+}
+
+/* Kijelölés panel */
+#selectionHighlight {
+    border-left: 4px solid #ffc107;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#selectedText {
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.toggle-text {
+    font-size: 0.8rem;
+}
+
+.toggle-text .bi-eye-slash {
+    display: none;
+}
+
+.toggle-text.collapsed .bi-eye {
+    display: none;
+}
+
+.toggle-text.collapsed .bi-eye-slash {
+    display: inline;
+}
+
+/* Kommentek */
+.comment-item {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s;
+}
+
+.comment-item:hover {
+    background-color: #e9ecef;
+}
+
+.comment-item.new-comment {
+    animation: highlight-new 2s ease-out;
+}
+
+@keyframes highlight-new {
+    from { background-color: #d1e7dd; }
+    to { background-color: #f8f9fa; }
+}
+
+/* Kiemelések */
+.highlight-item {
+    border-left: 4px solid #ffc107;
+}
+
+.highlight-item.new-highlight {
+    animation: highlight-new-yellow 2s ease-out;
+}
+
+@keyframes highlight-new-yellow {
+    from { background-color: #fff3cd; }
+    to { background-color: rgba(255, 193, 7, 0.2); }
+}
+
+/* Naptár */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    text-decoration: none;
+    color: #333;
+    border-radius: 4px;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.calendar-day.has-reading {
+    background-color: #e9ecef;
+}
+
+.calendar-day.no-reading {
+    background-color: #f8f9fa;
+    color: #adb5bd;
+}
+
+.calendar-day.is-read {
+    background-color: #198754;
+    color: white;
+}
+
+.calendar-day.is-today {
+    border: 2px solid #0d6efd;
+    font-weight: bold;
+}
+
+.calendar-day:hover {
+    transform: scale(1.1);
+    z-index: 1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.calendar-day .read-check {
+    position: absolute;
+    font-size: 0.5rem;
+    bottom: 1px;
+    right: 2px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .calendar-day {
+        font-size: 0.65rem;
+    }
+    
+    .reading-section .lead {
+        font-size: 1rem;
+    }
+}
+
+/* Animációk */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Bejelentkezési oldal */
+.card.shadow {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Footer */
+.footer {
+    margin-top: auto;
+}
+
+/* Gombok */
+.btn-outline-danger.delete-comment,
+.btn-outline-danger.delete-highlight {
+    padding: 2px 6px;
+    font-size: 0.75rem;
+}
+
+/* Progress bar a statisztikákban */
+.progress {
+    background-color: #e9ecef;
+}
+
+/* Badge-ek */
+.badge.bg-secondary {
+    font-weight: normal;
+}
+
+/* Jelmagyarázat */
+.calendar-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 50%;
+    margin-right: 4px;
+}

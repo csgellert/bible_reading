@@ -1,0 +1,288 @@
+{
+    "01-01": {
+        "ot": "1Mózes 1-3",
+        "nt": "Máté 1",
+        "ps": "Zsoltár 1",
+        "pr": "Példabeszédek 1:1-7"
+    },
+    "01-02": {
+        "ot": "1Mózes 4-6",
+        "nt": "Máté 2",
+        "ps": "Zsoltár 2",
+        "pr": "Példabeszédek 1:8-19"
+    },
+    "01-03": {
+        "ot": "1Mózes 7-9",
+        "nt": "Máté 3",
+        "ps": "Zsoltár 3",
+        "pr": "Példabeszédek 1:20-33"
+    },
+    "01-04": {
+        "ot": "1Mózes 10-12",
+        "nt": "Máté 4",
+        "ps": "Zsoltár 4",
+        "pr": "Példabeszédek 2:1-11"
+    },
+    "01-05": {
+        "ot": "1Mózes 13-15",
+        "nt": "Máté 5:1-26",
+        "ps": "Zsoltár 5",
+        "pr": "Példabeszédek 2:12-22"
+    },
+    "01-06": {
+        "ot": "1Mózes 16-18",
+        "nt": "Máté 5:27-48",
+        "ps": "Zsoltár 6",
+        "pr": "Példabeszédek 3:1-10"
+    },
+    "01-07": {
+        "ot": "1Mózes 19-21",
+        "nt": "Máté 6:1-18",
+        "ps": "Zsoltár 7",
+        "pr": "Példabeszédek 3:11-20"
+    },
+    "01-08": {
+        "ot": "1Mózes 22-24",
+        "nt": "Máté 6:19-34",
+        "ps": "Zsoltár 8",
+        "pr": "Példabeszédek 3:21-35"
+    },
+    "01-09": {
+        "ot": "1Mózes 25-27",
+        "nt": "Máté 7",
+        "ps": "Zsoltár 9",
+        "pr": "Példabeszédek 4:1-9"
+    },
+    "01-10": {
+        "ot": "1Mózes 28-30",
+        "nt": "Máté 8:1-17",
+        "ps": "Zsoltár 10",
+        "pr": "Példabeszédek 4:10-19"
+    },
+    "01-11": {
+        "ot": "1Mózes 31-33",
+        "nt": "Máté 8:18-34",
+        "ps": "Zsoltár 11",
+        "pr": "Példabeszédek 4:20-27"
+    },
+    "01-12": {
+        "ot": "1Mózes 34-36",
+        "nt": "Máté 9:1-17",
+        "ps": "Zsoltár 12",
+        "pr": "Példabeszédek 5:1-14"
+    },
+    "01-13": {
+        "ot": "1Mózes 37-39",
+        "nt": "Máté 9:18-38",
+        "ps": "Zsoltár 13",
+        "pr": "Példabeszédek 5:15-23"
+    },
+    "01-14": {
+        "ot": "1Mózes 40-42",
+        "nt": "Máté 10:1-20",
+        "ps": "Zsoltár 14",
+        "pr": "Példabeszédek 6:1-11"
+    },
+    "01-15": {
+        "ot": "1Mózes 43-45",
+        "nt": "Máté 10:21-42",
+        "ps": "Zsoltár 15",
+        "pr": "Példabeszédek 6:12-19"
+    },
+    "01-16": {
+        "ot": "1Mózes 46-48",
+        "nt": "Máté 11",
+        "ps": "Zsoltár 16",
+        "pr": "Példabeszédek 6:20-35"
+    },
+    "01-17": {
+        "ot": "1Mózes 49-50",
+        "nt": "Máté 12:1-21",
+        "ps": "Zsoltár 17",
+        "pr": "Példabeszédek 7:1-5"
+    },
+    "01-18": {
+        "ot": "2Mózes 1-3",
+        "nt": "Máté 12:22-50",
+        "ps": "Zsoltár 18:1-24",
+        "pr": "Példabeszédek 7:6-27"
+    },
+    "01-19": {
+        "ot": "2Mózes 4-6",
+        "nt": "Máté 13:1-30",
+        "ps": "Zsoltár 18:25-50",
+        "pr": "Példabeszédek 8:1-11"
+    },
+    "01-20": {
+        "ot": "2Mózes 7-9",
+        "nt": "Máté 13:31-58",
+        "ps": "Zsoltár 19",
+        "pr": "Példabeszédek 8:12-21"
+    },
+    "01-21": {
+        "ot": "2Mózes 10-12",
+        "nt": "Máté 14:1-21",
+        "ps": "Zsoltár 20",
+        "pr": "Példabeszédek 8:22-36"
+    },
+    "01-22": {
+        "ot": "2Mózes 13-15",
+        "nt": "Máté 14:22-36",
+        "ps": "Zsoltár 21",
+        "pr": "Példabeszédek 9:1-12"
+    },
+    "01-23": {
+        "ot": "2Mózes 16-18",
+        "nt": "Máté 15:1-20",
+        "ps": "Zsoltár 22:1-18",
+        "pr": "Példabeszédek 9:13-18"
+    },
+    "01-24": {
+        "ot": "2Mózes 19-21",
+        "nt": "Máté 15:21-39",
+        "ps": "Zsoltár 22:19-31",
+        "pr": "Példabeszédek 10:1-5"
+    },
+    "01-25": {
+        "ot": "2Mózes 22-24",
+        "nt": "Máté 16",
+        "ps": "Zsoltár 23",
+        "pr": "Példabeszédek 10:6-10"
+    },
+    "01-26": {
+        "ot": "2Mózes 25-27",
+        "nt": "Máté 17",
+        "ps": "Zsoltár 24",
+        "pr": "Példabeszédek 10:11-16"
+    },
+    "01-27": {
+        "ot": "2Mózes 28-29",
+        "nt": "Máté 18:1-20",
+        "ps": "Zsoltár 25",
+        "pr": "Példabeszédek 10:17-22"
+    },
+    "01-28": {
+        "ot": "2Mózes 30-32",
+        "nt": "Máté 18:21-35",
+        "ps": "Zsoltár 26",
+        "pr": "Példabeszédek 10:23-28"
+    },
+    "01-29": {
+        "ot": "2Mózes 33-35",
+        "nt": "Máté 19:1-15",
+        "ps": "Zsoltár 27",
+        "pr": "Példabeszédek 10:29-32"
+    },
+    "01-30": {
+        "ot": "2Mózes 36-38",
+        "nt": "Máté 19:16-30",
+        "ps": "Zsoltár 28",
+        "pr": "Példabeszédek 11:1-5"
+    },
+    "01-31": {
+        "ot": "2Mózes 39-40",
+        "nt": "Máté 20:1-16",
+        "ps": "Zsoltár 29",
+        "pr": "Példabeszédek 11:6-11"
+    },
+    "02-01": {
+        "ot": "3Mózes 1-3",
+        "nt": "Máté 20:17-34",
+        "ps": "Zsoltár 30",
+        "pr": "Példabeszédek 11:12-17"
+    },
+    "02-02": {
+        "ot": "3Mózes 4-6",
+        "nt": "Máté 21:1-22",
+        "ps": "Zsoltár 31:1-8",
+        "pr": "Példabeszédek 11:18-23"
+    },
+    "02-03": {
+        "ot": "3Mózes 7-9",
+        "nt": "Máté 21:23-46",
+        "ps": "Zsoltár 31:9-24",
+        "pr": "Példabeszédek 11:24-31"
+    },
+    "02-04": {
+        "ot": "3Mózes 10-12",
+        "nt": "Máté 22:1-22",
+        "ps": "Zsoltár 32",
+        "pr": "Példabeszédek 12:1-7"
+    },
+    "02-05": {
+        "ot": "3Mózes 13-14",
+        "nt": "Máté 22:23-46",
+        "ps": "Zsoltár 33:1-11",
+        "pr": "Példabeszédek 12:8-14"
+    },
+    "02-06": {
+        "ot": "3Mózes 15-17",
+        "nt": "Máté 23:1-22",
+        "ps": "Zsoltár 33:12-22",
+        "pr": "Példabeszédek 12:15-21"
+    },
+    "02-07": {
+        "ot": "3Mózes 18-20",
+        "nt": "Máté 23:23-39",
+        "ps": "Zsoltár 34:1-10",
+        "pr": "Példabeszédek 12:22-28"
+    },
+    "02-08": {
+        "ot": "3Mózes 21-23",
+        "nt": "Máté 24:1-28",
+        "ps": "Zsoltár 34:11-22",
+        "pr": "Példabeszédek 13:1-6"
+    },
+    "02-09": {
+        "ot": "3Mózes 24-25",
+        "nt": "Máté 24:29-51",
+        "ps": "Zsoltár 35:1-16",
+        "pr": "Példabeszédek 13:7-13"
+    },
+    "02-10": {
+        "ot": "3Mózes 26-27",
+        "nt": "Máté 25:1-30",
+        "ps": "Zsoltár 35:17-28",
+        "pr": "Példabeszédek 13:14-21"
+    },
+    "12-25": {
+        "ot": "Zakariás 9-12",
+        "nt": "Jelenések 16",
+        "ps": "Zsoltár 144",
+        "pr": "Példabeszédek 30:29-33"
+    },
+    "12-26": {
+        "ot": "Zakariás 13-14",
+        "nt": "Jelenések 17",
+        "ps": "Zsoltár 145",
+        "pr": "Példabeszédek 31:1-9"
+    },
+    "12-27": {
+        "ot": "Malakiás 1-2",
+        "nt": "Jelenések 18",
+        "ps": "Zsoltár 146",
+        "pr": "Példabeszédek 31:10-17"
+    },
+    "12-28": {
+        "ot": "Malakiás 3-4",
+        "nt": "Jelenések 19",
+        "ps": "Zsoltár 147",
+        "pr": "Példabeszédek 31:18-24"
+    },
+    "12-29": {
+        "ot": "1Mózes 1-2 (újraolvasás)",
+        "nt": "Jelenések 20",
+        "ps": "Zsoltár 148",
+        "pr": "Példabeszédek 31:25-31"
+    },
+    "12-30": {
+        "ot": "Visszatekintés az évre",
+        "nt": "Jelenések 21",
+        "ps": "Zsoltár 149"
+    },
+    "12-31": {
+        "ot": "Visszatekintés az évre",
+        "nt": "Jelenések 22",
+        "ps": "Zsoltár 150"
+    }
+}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Éves Naptár - Bibliaolvasási Terv{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="bi bi-calendar3"></i> Éves Naptár</h2>
+        <p class="text-muted">Kattints egy napra az olvasmány megtekintéséhez</p>
+    </div>
+    <div class="col-auto">
+        <div class="card">
+            <div class="card-body py-2 px-3">
+                <strong>{{ total_read }}</strong> / 365 nap elolvasva
+                <div class="progress mt-1" style="height: 8px;">
+                    <div class="progress-bar bg-success" id="totalProgressBar" data-percent="{{ (total_read / 365 * 100)|round(1) }}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Jelmagyarázat -->
+<div class="mb-4">
+    <span class="badge bg-light text-dark border me-2">
+        <span class="calendar-dot"></span> Olvasandó
+    </span>
+    <span class="badge bg-success me-2">
+        ✓ Elolvasva
+    </span>
+    <span class="badge bg-primary me-2">
+        Ma
+    </span>
+</div>
+
+<!-- Naptár -->
+<div class="row">
+    {% for month in months %}
+    <div class="col-md-4 col-lg-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white text-center">
+                <strong>{{ month.name }}</strong>
+            </div>
+            <div class="card-body p-2">
+                <div class="calendar-grid">
+                    {% for day in month.days %}
+                    <a href="{{ url_for('bible.daily', date_str=day.date_str) }}" 
+                       class="calendar-day 
+                              {{ 'has-reading' if day.has_reading else 'no-reading' }}
+                              {{ 'is-read' if day.is_read else '' }}
+                              {{ 'is-today' if day.is_today else '' }}"
+                       title="{{ day.date_str }}">
+                        {{ day.day }}
+                        {% if day.is_read %}
+                        <span class="read-check">✓</span>
+                        {% endif %}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Statisztikák -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-trophy"></i> Olvasási rangsor</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for stat in stats %}
+            <div class="col-md-4 col-lg-3 mb-3">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        {% if loop.index == 1 %}
+                        <span class="badge bg-warning text-dark fs-5">🥇</span>
+                        {% elif loop.index == 2 %}
+                        <span class="badge bg-secondary fs-5">🥈</span>
+                        {% elif loop.index == 3 %}
+                        <span class="badge bg-warning fs-5" style="background-color: #cd7f32 !important;">🥉</span>
+                        {% else %}
+                        <span class="badge bg-light text-dark fs-5">{{ loop.index }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <strong>{{ stat.name }}</strong>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar stat-progress" data-percent="{{ (stat.days_read * 100 // 365) }}"></div>
+                        </div>
+                        <small class="text-muted">{{ stat.days_read }} nap</small>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col">
+                <p class="text-muted mb-0">Még nincs olvasási adat.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Progress barok szélességének beállítása
+document.addEventListener('DOMContentLoaded', function() {
+    // Fő progress bar
+    const totalBar = document.getElementById('totalProgressBar');
+    if (totalBar) {
+        totalBar.style.width = totalBar.dataset.percent + '%';
+    }
+    
+    // Statisztika progress barok
+    document.querySelectorAll('.stat-progress').forEach(bar => {
+        bar.style.width = bar.dataset.percent + '%';
+    });
+});
+</script>
+{% endblock %}
