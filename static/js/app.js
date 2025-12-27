@@ -3,6 +3,12 @@
 // Aktuális fordítás (localStorage-ból vagy alapértelmezett)
 let currentTranslation = localStorage.getItem('bibleTranslation') || 'SZIT';
 
+// Store event handlers for cleanup using WeakMap
+const eventHandlers = new WeakMap();
+
+// Constants
+const TOUCH_SELECTION_DELAY = 100; // ms delay for touch selection to complete
+
 document.addEventListener('DOMContentLoaded', function() {
     // Aktuális dátum az URL-ből
     const pathParts = window.location.pathname.split('/');
