@@ -194,15 +194,8 @@ function scrollToHighlightedVerse(verseRef) {
 let selectedVerseData = null;
 
 function setupTextSelection() {
-    // Kijelölés figyelése a bibliai szövegeken
-    document.querySelectorAll('.bible-content').forEach(content => {
-        content.addEventListener('mouseup', handleTextSelection);
-        // Mobil eszközökön touchend és selectionchange esemény
-        content.addEventListener('touchend', function(e) {
-            // Kis késleltetés, hogy a kijelölés befejeződjön
-            setTimeout(() => handleTextSelection(e), 100);
-        });
-    });
+    // Note: Event listeners for .bible-content elements are added dynamically
+    // in loadBibleVerses() after the content is loaded from the API
     
     // Mobil eszközökön a selectionchange eseményt is figyeljük
     document.addEventListener('selectionchange', function() {
