@@ -598,7 +598,8 @@ function addHighlightToDOM(id, username, verseRef, text) {
     
     list.insertAdjacentHTML('afterbegin', highlightHtml);
     
-    const newHighlightItem = list.querySelector(`[data-id="${id}"].highlight-item`);
+    // Get the newly inserted element (it's the first child now)
+    const newHighlightItem = list.firstElementChild;
     if (newHighlightItem) {
         newHighlightItem.addEventListener('click', () => {
             const ref = newHighlightItem.dataset.ref;
@@ -606,14 +607,14 @@ function addHighlightToDOM(id, username, verseRef, text) {
                 scrollToHighlightedVerse(ref);
             }
         });
-    }
-    
-    const newDeleteBtn = list.querySelector(`[data-id="${id}"].delete-highlight`);
-    if (newDeleteBtn) {
-        newDeleteBtn.addEventListener('click', (event) => {
-            event.stopPropagation();
-            deleteHighlight(id);
-        });
+        
+        const newDeleteBtn = newHighlightItem.querySelector('.delete-highlight');
+        if (newDeleteBtn) {
+            newDeleteBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                deleteHighlight(id);
+            });
+        }
     }
     
     // Frissítjük a kiemeléseket a szövegben
