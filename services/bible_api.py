@@ -368,17 +368,17 @@ def format_verses_html(verses_data):
         # Ellenőrizzük, hogy van-e szakasz cím a szövegben
         has_section_title = 'section-title' in text
         
-        # Vers hozzáadása
+        # Vers hozzáadása - data-ref attribútummal a teljes hivatkozáshoz
         if verse_num:
             # Ha van szakasz cím, előtte új sor
             if has_section_title and html_parts:
                 html_parts.append('<br>')
             
             html_parts.append(
-                f'<span class="verse" data-verse="{verse_num}">'
+                f'<span class="verse" data-verse="{verse_num}" data-ref="{ref}">'
                 f'<sup class="verse-num">{verse_num}</sup>{text}</span> '
             )
         else:
-            html_parts.append(f'<span class="verse">{text}</span> ')
+            html_parts.append(f'<span class="verse" data-ref="{ref}">{text}</span> ')
     
     return ''.join(html_parts)

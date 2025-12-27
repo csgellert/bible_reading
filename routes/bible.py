@@ -5,7 +5,7 @@ import json
 import os
 from config import Config
 from models.database import (
-    get_comments_for_date, add_comment, delete_comment,
+    get_comments_for_date, add_comment, delete_comment, update_comment,
     get_highlights_for_date, add_highlight, delete_highlight,
     mark_day_as_read, unmark_day_as_read, get_reading_log,
     get_all_users, get_all_reading_stats, get_readers_for_date,
@@ -258,6 +258,21 @@ def api_delete_comment(comment_id):
     deleted = delete_comment(comment_id, session['user_id'])
     return jsonify({'success': deleted})
 
+
+@bible_bp.route('/api/comment/<int:comment_id>', methods=['PUT'])
+@login_required
+def api_update_comment(comment_id):
+    """Komment szerkesztése"""
+    data = request.get_json()
+    content = data.get('content', '').strip()
+    
+    if not content:
+        return jsonify({'error': 'Üres komment'}), 400
+    
+    updated = update_comment(comment_id, session['user_id'], content)
+    return jsonify({'success': updated})
+
+
 @bible_bp.route('/api/highlight', methods=['POST'])
 @login_required
 def api_add_highlight():
@@ -393,12 +408,35 @@ def my_notes():
     view_type = request.args.get('view', 'all')
     
     if view_type == 'comments':
-        notes = get_user_comments(user_id, plan_id)
+        raw_notes = get_user_comments(user_id, plan_id)
+        # Átalakítjuk a comments formátumot az egységes megjelenítéshez
+        notes = []
+        for note in raw_notes:
+            notes.append({
+                'type': 'comment',
+                'id': note['id'],
+                'date': note['date'],
+                'verse_ref': note.get('verse_ref', ''),
+                'text': note['content'],
+                'comment_type': note.get('comment_type'),
+                'color': None,
+                'created_at': note['created_at']
+            })
     elif view_type == 'highlights':
-        notes = get_user_highlights(user_id, plan_id)
+        raw_notes = get_user_highlights(user_id, plan_id)
         # Átalakítjuk a highlights formátumot
-        for note in notes:
-            note['type'] = 'highlight'
+        notes = []
+        for note in raw_notes:
+            notes.append({
+                'type': 'highlight',
+                'id': note['id'],
+                'date': note['date'],
+                'verse_ref': note.get('verse_ref', ''),
+                'text': note['text'],
+                'comment_type': None,
+                'color': note.get('color', 'yellow'),
+                'created_at': note['created_at']
+            })
     else:
         notes = get_user_notes_combined(user_id, plan_id)
     

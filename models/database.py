@@ -466,6 +466,18 @@ def delete_comment(comment_id, user_id):
     return deleted
 
 
+def update_comment(comment_id, user_id, content):
+    """Komment szerkesztése (csak a saját kommentet)"""
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+    p = placeholder()
+    cursor.execute(f'UPDATE comments SET content = {p} WHERE id = {p} AND user_id = {p}', (content, comment_id, user_id))
+    conn.commit()
+    updated = cursor.rowcount > 0
+    conn.close()
+    return updated
+
+
 # ==========================================
 # Kiemelés műveletek
 # ==========================================

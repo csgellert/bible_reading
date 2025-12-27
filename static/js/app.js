@@ -66,6 +66,12 @@ function loadBibleVerses() {
                     content.innerHTML = data.html;
                     // Újra beállítjuk a szöveg kijelölést az új tartalomhoz
                     content.addEventListener('mouseup', handleTextSelection);
+                    // Mobil touch esemény
+                    content.addEventListener('touchend', function(e) {
+                        setTimeout(() => handleTextSelection(e), 100);
+                    });
+                    // Kiemelések megjelölése a szövegben
+                    applyHighlightsToText();
                 } else {
                     content.innerHTML = `
                         <p class="text-muted fst-italic mb-0">
@@ -93,6 +99,71 @@ function loadBibleVerses() {
     });
 }
 
+// Kiemelések vizuális megjelölése a szövegben (csak saját kiemelések)
+function applyHighlightsToText() {
+    // Csak a saját kiemeléseket keressük (data-own="true")
+    const highlightItems = document.querySelectorAll('.highlight-item[data-own="true"]');
+    
+    highlightItems.forEach(item => {
+        const verseRef = item.dataset.ref;
+        if (!verseRef) return;
+        
+        // Megkeressük a vers(ek)et a referencia alapján
+        const verses = findVersesForReference(verseRef);
+        verses.forEach(verse => {
+            verse.classList.add('user-highlighted');
+        });
+    });
+}
+
+// Vers elemek keresése referencia alapján
+function findVersesForReference(verseRef) {
+    const results = [];
+    if (!verseRef) return results;
+    
+    // Parse reference: "Lk 2,5" or "Lk 2,5-8"
+    const match = verseRef.match(/^(.+?)\s*(\d+),(\d+)(?:-(\d+))?$/);
+    if (!match) return results;
+    
+    const book = match[1].trim();
+    const chapter = match[2];
+    const startVerse = parseInt(match[3]);
+    const endVerse = match[4] ? parseInt(match[4]) : startVerse;
+    
+    // Megkeressük az összes vers elemet
+    document.querySelectorAll('.verse[data-ref]').forEach(verse => {
+        const ref = verse.dataset.ref;
+        const verseMatch = ref.match(/^(.+?)\s*(\d+),(\d+)$/);
+        if (!verseMatch) return;
+        
+        const vBook = verseMatch[1].trim();
+        const vChapter = verseMatch[2];
+        const vNum = parseInt(verseMatch[3]);
+        
+        // Ellenőrizzük, hogy ez a vers a kiemeléshez tartozik-e
+        if (vBook === book && vChapter === chapter && vNum >= startVerse && vNum <= endVerse) {
+            results.push(verse);
+        }
+    });
+    
+    return results;
+}
+
+// Kiemelésre kattintáskor a szöveghez ugrás
+function scrollToHighlightedVerse(verseRef) {
+    const verses = findVersesForReference(verseRef);
+    if (verses.length > 0) {
+        const firstVerse = verses[0];
+        // Görgetés a vershez
+        firstVerse.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Villogtatás a kiemeléshez
+        verses.forEach(v => {
+            v.classList.add('highlight-flash');
+            setTimeout(() => v.classList.remove('highlight-flash'), 2000);
+        });
+    }
+}
+
 // Szöveg kijelölés kezelése
 let selectedVerseData = null;
 
@@ -100,6 +171,29 @@ function setupTextSelection() {
     // Kijelölés figyelése a bibliai szövegeken
     document.querySelectorAll('.bible-content').forEach(content => {
         content.addEventListener('mouseup', handleTextSelection);
+        // Mobil eszközökön touchend és selectionchange esemény
+        content.addEventListener('touchend', function(e) {
+            // Kis késleltetés, hogy a kijelölés befejeződjön
+            setTimeout(() => handleTextSelection(e), 100);
+        });
+    });
+    
+    // Mobil eszközökön a selectionchange eseményt is figyeljük
+    document.addEventListener('selectionchange', function() {
+        const selection = window.getSelection();
+        if (selection && selection.toString().trim().length >= 3) {
+            // Ellenőrizzük, hogy a kijelölés a bible-content-ben van-e
+            if (selection.anchorNode) {
+                const bibleContent = selection.anchorNode.parentElement?.closest('.bible-content');
+                if (bibleContent) {
+                    // Jelezzük, hogy van érvényes kijelölés
+                    clearTimeout(window.selectionTimeout);
+                    window.selectionTimeout = setTimeout(() => {
+                        handleTextSelectionMobile(bibleContent);
+                    }, 500);
+                }
+            }
+        }
     });
     
     // Kiemelés megerősítése gomb
@@ -130,6 +224,71 @@ function setupTextSelection() {
     });
 }
 
+// Mobil kijelölés kezelése (selectionchange alapú)
+function handleTextSelectionMobile(container) {
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+    
+    if (selectedText.length < 3) {
+        return;
+    }
+    
+    // Keressük meg az első és utolsó verset a kijelölésben
+    let firstRef = null;
+    let lastRef = null;
+    
+    const verses = container.querySelectorAll('.verse[data-ref]');
+    verses.forEach(verse => {
+        if (selection.containsNode(verse, true)) {
+            const ref = verse.dataset.ref;
+            if (!firstRef) {
+                firstRef = ref;
+            }
+            lastRef = ref;
+        }
+    });
+    
+    // Vers referencia összeállítása
+    let verseRef = '';
+    if (firstRef && lastRef) {
+        const firstMatch = firstRef.match(/^(.+?)\s*(\d+),(\d+)$/);
+        const lastMatch = lastRef.match(/^(.+?)\s*(\d+),(\d+)$/);
+        
+        if (firstMatch && lastMatch) {
+            const book = firstMatch[1].trim();
+            const firstChapter = firstMatch[2];
+            const firstVerse = firstMatch[3];
+            const lastChapter = lastMatch[2];
+            const lastVerse = lastMatch[3];
+            
+            if (firstChapter === lastChapter) {
+                if (firstVerse === lastVerse) {
+                    verseRef = `${book} ${firstChapter},${firstVerse}`;
+                } else {
+                    verseRef = `${book} ${firstChapter},${firstVerse}-${lastVerse}`;
+                }
+            } else {
+                verseRef = `${book} ${firstChapter},${firstVerse}-${lastChapter},${lastVerse}`;
+            }
+        } else {
+            verseRef = firstRef;
+        }
+    }
+    
+    if (!verseRef) {
+        return;
+    }
+    
+    // Kijelölési adatok mentése
+    selectedVerseData = {
+        text: selectedText,
+        verseRef: verseRef
+    };
+    
+    // Megjelenítjük a kijelölés panelt
+    showSelectionPanel(selectedText, verseRef);
+}
+
 function handleTextSelection(e) {
     const selection = window.getSelection();
     const selectedText = selection.toString().trim();
@@ -141,32 +300,57 @@ function handleTextSelection(e) {
     // Keressük meg a kijelölt verseket
     const range = selection.getRangeAt(0);
     const container = e.currentTarget;
-    const book = container.dataset.book || '';
     
     // Keressük meg az első és utolsó verset a kijelölésben
-    let startVerse = null;
-    let endVerse = null;
+    let firstRef = null;
+    let lastRef = null;
     
     // Végigmegyünk a kijelölt elemeken
-    const verses = container.querySelectorAll('.verse');
+    const verses = container.querySelectorAll('.verse[data-ref]');
     verses.forEach(verse => {
         if (selection.containsNode(verse, true)) {
-            const verseNum = verse.dataset.verse;
-            if (startVerse === null) {
-                startVerse = verseNum;
+            const ref = verse.dataset.ref;
+            if (!firstRef) {
+                firstRef = ref;
             }
-            endVerse = verseNum;
+            lastRef = ref;
         }
     });
     
-    // Vers referencia összeállítása
-    let verseRef = book;
-    if (startVerse && endVerse) {
-        if (startVerse === endVerse) {
-            verseRef += ` 1:${startVerse}`;
+    // Vers referencia összeállítása a data-ref-ből (pl "Lk 2,5")
+    let verseRef = '';
+    if (firstRef && lastRef) {
+        // Kinyerjük a könyvet és fejezetet az első referenciából
+        // Formátum: "Lk 2,5" -> könyv: "Lk", fejezet: "2", vers: "5"
+        const firstMatch = firstRef.match(/^(.+?)\s*(\d+),(\d+)$/);
+        const lastMatch = lastRef.match(/^(.+?)\s*(\d+),(\d+)$/);
+        
+        if (firstMatch && lastMatch) {
+            const book = firstMatch[1].trim();
+            const firstChapter = firstMatch[2];
+            const firstVerse = firstMatch[3];
+            const lastChapter = lastMatch[2];
+            const lastVerse = lastMatch[3];
+            
+            if (firstChapter === lastChapter) {
+                // Ugyanaz a fejezet
+                if (firstVerse === lastVerse) {
+                    verseRef = `${book} ${firstChapter},${firstVerse}`;
+                } else {
+                    verseRef = `${book} ${firstChapter},${firstVerse}-${lastVerse}`;
+                }
+            } else {
+                // Különböző fejezetek
+                verseRef = `${book} ${firstChapter},${firstVerse}-${lastChapter},${lastVerse}`;
+            }
         } else {
-            verseRef += ` 1:${startVerse}-${endVerse}`;
+            // Fallback ha nem sikerült parse-olni
+            verseRef = firstRef;
         }
+    }
+    
+    if (!verseRef) {
+        return; // Nem sikerült referenciát gyűjteni
     }
     
     // Kijelölési adatok mentése
@@ -185,15 +369,14 @@ function showSelectionPanel(text, verseRef) {
     const refElement = document.getElementById('selectedVerseRef');
     
     if (panel && textElement && refElement) {
-        // Maximum 200 karakter megjelenítése
-        const displayText = text.length > 200 ? text.substring(0, 200) + '...' : text;
+        // Maximum 100 karakter megjelenítése (rövidebb a lebegő panelen)
+        const displayText = text.length > 100 ? text.substring(0, 100) + '...' : text;
         
-        textElement.textContent = `"${displayText}"`;
+        textElement.textContent = `„${displayText}”`;
         refElement.textContent = verseRef;
         panel.classList.remove('d-none');
         
-        // Görgetés a panelhez
-        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // NEM görgetünk - a panel fix pozícióban van a képernyő alján
     }
 }
 
@@ -392,9 +575,12 @@ function addHighlightToDOM(id, username, verseRef, text) {
     }
     
     const highlightHtml = `
-        <div class="highlight-item p-2 mb-2 rounded fade-in new-highlight" 
+        <div class="highlight-item p-2 mb-2 rounded fade-in new-highlight own-highlight" 
              style="background-color: #ffc10733;"
-             data-id="${id}">
+             data-id="${id}"
+             data-ref="${verseRef || ''}"
+             data-own="true"
+             onclick="scrollToHighlightedVerse('${verseRef || ''}')">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     ${verseRef ? `<strong class="text-primary">${verseRef}:</strong>` : ''}
@@ -404,7 +590,7 @@ function addHighlightToDOM(id, username, verseRef, text) {
                         <i class="bi bi-person"></i> ${username}
                     </small>
                 </div>
-                <button class="btn btn-sm btn-outline-danger delete-highlight" data-id="${id}">
+                <button class="btn btn-sm btn-outline-danger delete-highlight" data-id="${id}" onclick="event.stopPropagation();">
                     <i class="bi bi-trash"></i>
                 </button>
             </div>
@@ -417,6 +603,9 @@ function addHighlightToDOM(id, username, verseRef, text) {
     if (newDeleteBtn) {
         newDeleteBtn.addEventListener('click', () => deleteHighlight(id));
     }
+    
+    // Frissítjük a kiemeléseket a szövegben
+    applyHighlightsToText();
 }
 
 // Olvasottként megjelölés
@@ -480,6 +669,97 @@ function setupDeleteButtons() {
             deleteHighlight(id);
         });
     });
+    
+    // Komment szerkesztés
+    setupEditButtons();
+}
+
+function setupEditButtons() {
+    // Szerkesztés gomb
+    document.querySelectorAll('.edit-comment').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const commentItem = this.closest('.comment-item');
+            const contentEl = commentItem.querySelector('.comment-content');
+            const editForm = commentItem.querySelector('.edit-form');
+            
+            // Megjelenítjük a szerkesztő űrlapot, elrejtjük a tartalmat
+            contentEl.classList.add('d-none');
+            editForm.classList.remove('d-none');
+        });
+    });
+    
+    // Mentés gomb
+    document.querySelectorAll('.save-edit').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const id = this.dataset.id;
+            const commentItem = this.closest('.comment-item');
+            const textarea = commentItem.querySelector('.edit-textarea');
+            const newContent = textarea.value.trim();
+            
+            if (!newContent) {
+                alert('A megjegyzés nem lehet üres!');
+                return;
+            }
+            
+            await saveCommentEdit(id, newContent, commentItem);
+        });
+    });
+    
+    // Mégse gomb
+    document.querySelectorAll('.cancel-edit').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const commentItem = this.closest('.comment-item');
+            const contentEl = commentItem.querySelector('.comment-content');
+            const editForm = commentItem.querySelector('.edit-form');
+            const textarea = commentItem.querySelector('.edit-textarea');
+            
+            // Visszaállítjuk az eredeti tartalmat
+            textarea.value = contentEl.textContent;
+            
+            // Elrejtjük a szerkesztő űrlapot, megjelenítjük a tartalmat
+            editForm.classList.add('d-none');
+            contentEl.classList.remove('d-none');
+        });
+    });
+}
+
+async function saveCommentEdit(id, content, commentItem) {
+    try {
+        const response = await fetch(`/api/comment/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ content: content })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const contentEl = commentItem.querySelector('.comment-content');
+            const editForm = commentItem.querySelector('.edit-form');
+            const textarea = commentItem.querySelector('.edit-textarea');
+            
+            // Frissítjük a tartalmat
+            contentEl.textContent = content;
+            textarea.value = content;
+            
+            // Elrejtjük a szerkesztő űrlapot
+            editForm.classList.add('d-none');
+            contentEl.classList.remove('d-none');
+            
+            // Vizuális visszajelzés
+            commentItem.style.backgroundColor = '#d4edda';
+            setTimeout(() => {
+                commentItem.style.backgroundColor = '';
+            }, 1000);
+        } else {
+            alert('Hiba történt a mentés során.');
+        }
+    } catch (error) {
+        console.error('Hiba a komment szerkesztésekor:', error);
+        alert('Hiba történt a mentés során.');
+    }
 }
 
 async function deleteComment(id) {

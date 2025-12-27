@@ -60,12 +60,26 @@
                     
                     {% if note.type == 'comment' %}
                         <div class="note-content">
-                            {{ note.content }}
+                            {% if note.verse_ref %}
+                            <div class="mb-2">
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-bookmark"></i> {{ note.verse_ref }}
+                                </span>
+                            </div>
+                            {% endif %}
+                            <p class="mb-0">{{ note.text }}</p>
                         </div>
                     {% else %}
                         <div class="highlight-content">
-                            <span class="highlight-text" style="background-color: {{ note.color }}; padding: 2px 6px; border-radius: 3px;">
-                                "{{ note.text }}"
+                            {% if note.verse_ref %}
+                            <div class="mb-2">
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-bookmark"></i> {{ note.verse_ref }}
+                                </span>
+                            </div>
+                            {% endif %}
+                            <span class="highlight-text" style="background-color: {{ note.color or '#fff3cd' }}; padding: 2px 6px; border-radius: 3px;">
+                                „{{ note.text }}"
                             </span>
                         </div>
                     {% endif %}
