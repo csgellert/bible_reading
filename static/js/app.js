@@ -3,6 +3,12 @@
 // Aktuális fordítás (localStorage-ból vagy alapértelmezett)
 let currentTranslation = localStorage.getItem('bibleTranslation') || 'SZIT';
 
+// Store event handlers for cleanup using WeakMap
+const eventHandlers = new WeakMap();
+
+// Constants
+const TOUCH_SELECTION_DELAY = 100; // ms delay for touch selection to complete
+
 document.addEventListener('DOMContentLoaded', function() {
     // Aktuális dátum az URL-ből
     const pathParts = window.location.pathname.split('/');
@@ -66,10 +72,6 @@ function loadBibleVerses() {
                     content.innerHTML = data.html;
                     // Újra beállítjuk a szöveg kijelölést az új tartalomhoz
                     content.addEventListener('mouseup', handleTextSelection);
-                    // Mobil touch esemény
-                    content.addEventListener('touchend', function(e) {
-                        setTimeout(() => handleTextSelection(e), 100);
-                    });
                     // Kiemelések megjelölése a szövegben
                     applyHighlightsToText();
                 } else {
@@ -171,14 +173,9 @@ function setupTextSelection() {
     // Kijelölés figyelése a bibliai szövegeken
     document.querySelectorAll('.bible-content').forEach(content => {
         content.addEventListener('mouseup', handleTextSelection);
-        // Mobil eszközökön touchend és selectionchange esemény
-        content.addEventListener('touchend', function(e) {
-            // Kis késleltetés, hogy a kijelölés befejeződjön
-            setTimeout(() => handleTextSelection(e), 100);
-        });
     });
     
-    // Mobil eszközökön a selectionchange eseményt is figyeljük
+    // Mobil eszközökön a selectionchange eseményt figyeljük
     document.addEventListener('selectionchange', function() {
         const selection = window.getSelection();
         if (selection && selection.toString().trim().length >= 3) {
@@ -578,19 +575,18 @@ function addHighlightToDOM(id, username, verseRef, text) {
         <div class="highlight-item p-2 mb-2 rounded fade-in new-highlight own-highlight" 
              style="background-color: #ffc10733;"
              data-id="${id}"
-             data-ref="${verseRef || ''}"
-             data-own="true"
-             onclick="scrollToHighlightedVerse('${verseRef || ''}')">
+             data-ref="${escapeHtml(verseRef || '')}"
+             data-own="true">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    ${verseRef ? `<strong class="text-primary">${verseRef}:</strong>` : ''}
+                    ${verseRef ? `<strong class="text-primary">${escapeHtml(verseRef)}:</strong>` : ''}
                     <span>"${escapeHtml(text)}"</span>
                     <br>
                     <small class="text-muted">
-                        <i class="bi bi-person"></i> ${username}
+                        <i class="bi bi-person"></i> ${escapeHtml(username)}
                     </small>
                 </div>
-                <button class="btn btn-sm btn-outline-danger delete-highlight" data-id="${id}" onclick="event.stopPropagation();">
+                <button class="btn btn-sm btn-outline-danger delete-highlight" data-id="${id}">
                     <i class="bi bi-trash"></i>
                 </button>
             </div>
@@ -599,9 +595,23 @@ function addHighlightToDOM(id, username, verseRef, text) {
     
     list.insertAdjacentHTML('afterbegin', highlightHtml);
     
-    const newDeleteBtn = list.querySelector(`[data-id="${id}"].delete-highlight`);
-    if (newDeleteBtn) {
-        newDeleteBtn.addEventListener('click', () => deleteHighlight(id));
+    // Get the newly inserted element (it's the first child now)
+    const newHighlightItem = list.firstElementChild;
+    if (newHighlightItem) {
+        newHighlightItem.addEventListener('click', () => {
+            const ref = newHighlightItem.dataset.ref;
+            if (ref) {
+                scrollToHighlightedVerse(ref);
+            }
+        });
+        
+        const newDeleteBtn = newHighlightItem.querySelector('.delete-highlight');
+        if (newDeleteBtn) {
+            newDeleteBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                deleteHighlight(id);
+            });
+        }
     }
     
     // Frissítjük a kiemeléseket a szövegben

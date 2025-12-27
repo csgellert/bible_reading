@@ -167,7 +167,7 @@
                          data-id="{{ highlight.id }}"
                          data-ref="{{ highlight.verse_ref }}"
                          {% if highlight.user_id == session.user_id %}data-own="true"{% endif %}
-                         onclick="scrollToHighlightedVerse({{ highlight.verse_ref | tojson }})">
+                         onclick="scrollToHighlightedVerse(this.dataset.ref)">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 {% if highlight.verse_ref %}
@@ -235,8 +235,7 @@
                                 <small class="text-muted">{{ comment.created_at }}</small>
                                 {% if comment.user_id == session.user_id %}
                                 <button class="btn btn-sm btn-outline-primary ms-2 edit-comment" 
-                                        data-id="{{ comment.id }}"
-                                        data-content="{{ comment.content }}">
+                                        data-id="{{ comment.id }}">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger delete-comment" 
