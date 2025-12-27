@@ -578,15 +578,15 @@ function addHighlightToDOM(id, username, verseRef, text) {
         <div class="highlight-item p-2 mb-2 rounded fade-in new-highlight own-highlight" 
              style="background-color: #ffc10733;"
              data-id="${id}"
-             data-ref="${verseRef || ''}"
+             data-ref="${escapeHtml(verseRef || '')}"
              data-own="true">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    ${verseRef ? `<strong class="text-primary">${verseRef}:</strong>` : ''}
+                    ${verseRef ? `<strong class="text-primary">${escapeHtml(verseRef)}:</strong>` : ''}
                     <span>"${escapeHtml(text)}"</span>
                     <br>
                     <small class="text-muted">
-                        <i class="bi bi-person"></i> ${username}
+                        <i class="bi bi-person"></i> ${escapeHtml(username)}
                     </small>
                 </div>
                 <button class="btn btn-sm btn-outline-danger delete-highlight" data-id="${id}">
