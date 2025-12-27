@@ -100,6 +100,29 @@ function setupTextSelection() {
     // Kijelölés figyelése a bibliai szövegeken
     document.querySelectorAll('.bible-content').forEach(content => {
         content.addEventListener('mouseup', handleTextSelection);
+        // Mobil eszközökön touchend és selectionchange esemény
+        content.addEventListener('touchend', function(e) {
+            // Kis késleltetés, hogy a kijelölés befejeződjön
+            setTimeout(() => handleTextSelection(e), 100);
+        });
+    });
+    
+    // Mobil eszközökön a selectionchange eseményt is figyeljük
+    document.addEventListener('selectionchange', function() {
+        const selection = window.getSelection();
+        if (selection && selection.toString().trim().length >= 3) {
+            // Ellenőrizzük, hogy a kijelölés a bible-content-ben van-e
+            if (selection.anchorNode) {
+                const bibleContent = selection.anchorNode.parentElement?.closest('.bible-content');
+                if (bibleContent) {
+                    // Jelezzük, hogy van érvényes kijelölés
+                    clearTimeout(window.selectionTimeout);
+                    window.selectionTimeout = setTimeout(() => {
+                        handleTextSelectionMobile(bibleContent);
+                    }, 500);
+                }
+            }
+        }
     });
     
     // Kiemelés megerősítése gomb
@@ -128,6 +151,52 @@ function setupTextSelection() {
             }
         }
     });
+}
+
+// Mobil kijelölés kezelése (selectionchange alapú)
+function handleTextSelectionMobile(container) {
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+    
+    if (selectedText.length < 3) {
+        return;
+    }
+    
+    const book = container.dataset.book || '';
+    
+    // Keressük meg az első és utolsó verset a kijelölésben
+    let startVerse = null;
+    let endVerse = null;
+    
+    const verses = container.querySelectorAll('.verse');
+    verses.forEach(verse => {
+        if (selection.containsNode(verse, true)) {
+            const verseNum = verse.dataset.verse;
+            if (startVerse === null) {
+                startVerse = verseNum;
+            }
+            endVerse = verseNum;
+        }
+    });
+    
+    // Vers referencia összeállítása
+    let verseRef = book;
+    if (startVerse && endVerse) {
+        if (startVerse === endVerse) {
+            verseRef += ` 1:${startVerse}`;
+        } else {
+            verseRef += ` 1:${startVerse}-${endVerse}`;
+        }
+    }
+    
+    // Kijelölési adatok mentése
+    selectedVerseData = {
+        text: selectedText,
+        verseRef: verseRef
+    };
+    
+    // Megjelenítjük a kijelölés panelt
+    showSelectionPanel(selectedText, verseRef);
 }
 
 function handleTextSelection(e) {
@@ -185,15 +254,14 @@ function showSelectionPanel(text, verseRef) {
     const refElement = document.getElementById('selectedVerseRef');
     
     if (panel && textElement && refElement) {
-        // Maximum 200 karakter megjelenítése
-        const displayText = text.length > 200 ? text.substring(0, 200) + '...' : text;
+        // Maximum 100 karakter megjelenítése (rövidebb a lebegő panelen)
+        const displayText = text.length > 100 ? text.substring(0, 100) + '...' : text;
         
-        textElement.textContent = `"${displayText}"`;
+        textElement.textContent = `„${displayText}”`;
         refElement.textContent = verseRef;
         panel.classList.remove('d-none');
         
-        // Görgetés a panelhez
-        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // NEM görgetünk - a panel fix pozícióban van a képernyő alján
     }
 }
 

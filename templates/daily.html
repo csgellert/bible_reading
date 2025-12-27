@@ -135,24 +135,6 @@
                 </h5>
             </div>
             <div class="card-body">
-                <!-- Kijelölésből származó kiemelés - alapból rejtett -->
-                <div id="selectionHighlight" class="alert alert-warning d-none mb-3">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <strong id="selectedVerseRef"></strong>
-                            <p id="selectedText" class="mb-0 fst-italic"></p>
-                        </div>
-                        <div>
-                            <button type="button" class="btn btn-warning btn-sm" id="confirmHighlight">
-                                <i class="bi bi-highlighter"></i> Kiemelés mentése
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary btn-sm" id="cancelHighlight">
-                                <i class="bi bi-x"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Kézi kiemelés form - összecsukható -->
                 <div class="mb-3">
                     <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#manualHighlightForm">
@@ -359,4 +341,24 @@
         document.getElementById('jumpDay').value = day;
     }
 </script>
+
+<!-- Lebegő kiemelés panel - fix pozícióban a képernyő alján -->
+<div id="selectionHighlight" class="selection-highlight-floating d-none">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center gap-3">
+            <div class="flex-grow-1 overflow-hidden">
+                <strong id="selectedVerseRef" class="text-primary"></strong>
+                <span id="selectedText" class="fst-italic text-truncate d-block"></span>
+            </div>
+            <div class="d-flex gap-2 flex-shrink-0">
+                <button type="button" class="btn btn-warning" id="confirmHighlight">
+                    <i class="bi bi-highlighter"></i> <span class="d-none d-sm-inline">Mentés</span>
+                </button>
+                <button type="button" class="btn btn-outline-secondary" id="cancelHighlight">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
