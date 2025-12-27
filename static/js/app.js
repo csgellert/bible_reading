@@ -6,6 +6,9 @@ let currentTranslation = localStorage.getItem('bibleTranslation') || 'SZIT';
 // Store event handlers for cleanup using WeakMap
 const eventHandlers = new WeakMap();
 
+// Constants
+const TOUCH_SELECTION_DELAY = 100; // ms delay for touch selection to complete
+
 document.addEventListener('DOMContentLoaded', function() {
     // Aktuális dátum az URL-ből
     const pathParts = window.location.pathname.split('/');
@@ -75,12 +78,12 @@ function loadBibleVerses() {
                 if (data.success && data.html) {
                     content.innerHTML = data.html;
                     
-                    // Create event handler functions
+                    // Create event handler functions (wrappers needed for proper cleanup)
                     const mouseupHandler = function(e) {
                         handleTextSelection(e);
                     };
                     const touchendHandler = function(e) {
-                        setTimeout(() => handleTextSelection(e), 100);
+                        setTimeout(() => handleTextSelection(e), TOUCH_SELECTION_DELAY);
                     };
                     
                     // Store handlers in WeakMap for later removal
