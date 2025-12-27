@@ -77,10 +77,10 @@ function loadBibleVerses() {
                     
                     // Create event handler functions
                     const mouseupHandler = function(e) {
-                        handleTextSelection.call(this, e);
+                        handleTextSelection(e);
                     };
                     const touchendHandler = function(e) {
-                        setTimeout(() => handleTextSelection.call(this, e), 100);
+                        setTimeout(() => handleTextSelection(e), 100);
                     };
                     
                     // Store handlers in WeakMap for later removal
