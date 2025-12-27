@@ -4,6 +4,7 @@ from models.database import (
     get_all_plans, create_plan, delete_plan, update_plan_password, update_plan,
     get_plan_by_id, get_all_users, delete_user, get_user_stats
 )
+from config import Config
 import os
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
