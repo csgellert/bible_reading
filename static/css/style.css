@@ -265,15 +265,34 @@ a:hover {
     font-weight: 700;
     font-size: 0.95rem;
     color: var(--color-primary-dark);
-    margin: 0.75rem 0 0.5rem 0;
-    padding: 0.25rem 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    margin: 0.75rem 0 0.25rem 0;
+    padding: 0;
+    border-bottom: none;
     font-family: 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.3;
 }
 
 .verse .section-title {
     display: inline-block;
     margin-right: 0.5rem;
+    margin-bottom: 0;
+}
+
+/* Fejezet számok (több fejezet esetén, inline megjelenítés) */
+.chapter-number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    line-height: 1;
+    margin-right: 0.15rem;
+    vertical-align: baseline;
+    opacity: 0.85;
+    font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+.chapter-break {
+    display: block;
+    height: 1.2rem;
 }
 
 /* Fordítás választó */
