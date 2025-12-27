@@ -5,7 +5,7 @@
 {% block content %}
 <div class="row">
     <!-- Fő tartalom -->
-    <div class="col-lg-8">
+    <div class="col-lg-9">
         <!-- Navigáció és dátum -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -37,101 +37,55 @@
 
         <!-- Olvasási szakaszok -->
         <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h5 class="mb-0">
                     <i class="bi bi-book"></i> Mai olvasmányok
+                    {% if readings %}
+                    <span class="badge bg-light text-primary ms-2">{{ readings|length }} szakasz</span>
+                    {% endif %}
                 </h5>
+                <!-- Fordítás választó -->
+                <div class="translation-selector">
+                    <label for="translationSelect" class="small text-white-50 mb-0">Fordítás:</label>
+                    <select id="translationSelect" class="form-select form-select-sm">
+                        <option value="SZIT">SZIT</option>
+                        <option value="RUF">RUF</option>
+                        <option value="KG">KG</option>
+                        <option value="KNB">KNB</option>
+                        <option value="UF">UF</option>
+                    </select>
+                </div>
             </div>
             <div class="card-body">
-                {% if readings %}
-                    {% if readings.get('ot') %}
-                    <div class="reading-section mb-4">
+                {% if readings and readings|length > 0 %}
+                    {% for section in readings %}
+                    <div class="reading-section {{ 'mb-4' if not loop.last else 'mb-3' }}">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0"><i class="bi bi-bookmark"></i> Ószövetség</h6>
-                            <button class="btn btn-sm btn-outline-primary toggle-text" data-target="ot-text">
+                            <h6 class="mb-0"><i class="bi {{ section.icon }}"></i> {{ section.name }}</h6>
+                            <button class="btn btn-sm btn-outline-primary toggle-text" data-target="section-{{ section.id }}-text">
                                 <i class="bi bi-eye"></i> Szöveg
                             </button>
                         </div>
-                        <p class="lead mb-2">{{ readings.ot }}</p>
-                        <div class="bible-text collapse show" id="ot-text">
-                            <div class="bible-content p-3 bg-light rounded" data-book="1Móz">
-                                <span class="verse" data-verse="1"><sup class="verse-num">1</sup>Kezdetben teremtette Isten az eget és a földet.</span> <span class="verse" data-verse="2"><sup class="verse-num">2</sup>A föld még kietlen és puszta volt, sötétség volt a mélység felett, és Isten Lelke lebegett a vizek felett.</span> <span class="verse" data-verse="3"><sup class="verse-num">3</sup>Akkor ezt mondta Isten: Legyen világosság! És lett világosság.</span> <span class="verse" data-verse="4"><sup class="verse-num">4</sup>Látta Isten, hogy a világosság jó, és elválasztotta Isten a világosságot a sötétségtől.</span> <span class="verse" data-verse="5"><sup class="verse-num">5</sup>A világosságot nappalnak nevezte Isten, a sötétséget pedig éjszakának nevezte. Így lett este, és lett reggel: első nap.</span>
-                                <br><br>
-                                <span class="verse" data-verse="6"><sup class="verse-num">6</sup>Azután ezt mondta Isten: Legyen boltozat a vizek között, és válassza el egymástól a vizeket.</span> <span class="verse" data-verse="7"><sup class="verse-num">7</sup>Megalkotta tehát Isten a boltozatot, és elválasztotta a boltozat alatti vizeket a boltozat feletti vizektől. És úgy történt.</span> <span class="verse" data-verse="8"><sup class="verse-num">8</sup>Égnek nevezte el Isten a boltozatot. Így lett este, és lett reggel: második nap.</span>
-                                <br><br>
-                                <span class="verse" data-verse="9"><sup class="verse-num">9</sup>Azután ezt mondta Isten: Gyűljenek össze az ég alatti vizek egy helyre, és jelenjen meg a száraz. És úgy történt.</span> <span class="verse" data-verse="10"><sup class="verse-num">10</sup>A szárazat földnek nevezte Isten, az összegyűlt vizeket pedig tengernek nevezte. És látta Isten, hogy ez jó.</span>
+                        <p class="lead mb-2">{{ section.reference }}</p>
+                        <div class="bible-text collapse show" id="section-{{ section.id }}-text">
+                            <div class="bible-content p-3 bg-light rounded" 
+                                 data-section="{{ section.id }}"
+                                 data-reference="{{ section.reference }}">
+                                <div class="verse-loading text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Betöltés...</span>
+                                    </div>
+                                    <span class="ms-2 text-muted">Szöveg betöltése...</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    {% endif %}
-                    
-                    {% if readings.get('nt') %}
-                    <div class="reading-section mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0"><i class="bi bi-bookmark-fill"></i> Újszövetség</h6>
-                            <button class="btn btn-sm btn-outline-primary toggle-text" data-target="nt-text">
-                                <i class="bi bi-eye"></i> Szöveg
-                            </button>
-                        </div>
-                        <p class="lead mb-2">{{ readings.nt }}</p>
-                        <div class="bible-text collapse show" id="nt-text">
-                            <div class="bible-content p-3 bg-light rounded" data-book="Mt">
-                                <span class="verse" data-verse="1"><sup class="verse-num">1</sup>Jézus Krisztusnak, Dávid fiának, Ábrahám fiának nemzetségkönyve.</span> <span class="verse" data-verse="2"><sup class="verse-num">2</sup>Ábrahám fia volt Izsák, Izsák fia Jákób, Jákób fiai pedig Júda és testvérei.</span> <span class="verse" data-verse="3"><sup class="verse-num">3</sup>Júda fia volt Fáresz és Zerah, Támártól. Fáresz fia volt Heszrón, Heszrón fia Arám.</span> <span class="verse" data-verse="4"><sup class="verse-num">4</sup>Arám fia volt Ammínádáb, Ammínádáb fia Nahson, Nahson fia Szalmón.</span>
-                                <br><br>
-                                <span class="verse" data-verse="5"><sup class="verse-num">5</sup>Szalmón fia volt Boáz, Ráhábtól. Boáz fia Óbéd, Ruthtól. Óbéd fia Isai.</span> <span class="verse" data-verse="6"><sup class="verse-num">6</sup>Isai fia volt Dávid király. Dávid fia volt Salamon, Úriás feleségétől.</span> <span class="verse" data-verse="7"><sup class="verse-num">7</sup>Salamon fia volt Roboám, Roboám fia Abijjá, Abijjá fia Ászá.</span>
-                                <br><br>
-                                <span class="verse" data-verse="8"><sup class="verse-num">8</sup>Ászá fia volt Jósáfát, Jósáfát fia Jórám, Jórám fia Uzzijjá.</span> <span class="verse" data-verse="9"><sup class="verse-num">9</sup>Uzzijjá fia volt Jótám, Jótám fia Áház, Áház fia Ezékiás.</span> <span class="verse" data-verse="10"><sup class="verse-num">10</sup>Ezékiás fia volt Manassé, Manassé fia Ámón, Ámón fia Jósiás.</span>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    {% if readings.get('ps') %}
-                    <div class="reading-section mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0"><i class="bi bi-music-note"></i> Zsoltár</h6>
-                            <button class="btn btn-sm btn-outline-primary toggle-text" data-target="ps-text">
-                                <i class="bi bi-eye"></i> Szöveg
-                            </button>
-                        </div>
-                        <p class="lead mb-2">{{ readings.ps }}</p>
-                        <div class="bible-text collapse show" id="ps-text">
-                            <div class="bible-content p-3 bg-light rounded" data-book="Zsolt">
-                                <span class="verse" data-verse="1"><sup class="verse-num">1</sup>Boldog ember az, aki nem jár a bűnösök tanácsa szerint, nem áll a vétkesek útjára, és nem ül a csúfolódók székére,</span> <span class="verse" data-verse="2"><sup class="verse-num">2</sup>hanem az ÚR törvényében gyönyörködik, és az ő törvényéről elmélkedik éjjel-nappal.</span>
-                                <br><br>
-                                <span class="verse" data-verse="3"><sup class="verse-num">3</sup>Olyan lesz, mint a folyóvíz mellé ültetett fa, amely idejében megtermi gyümölcsét, és nem hervad el a lombja. Minden sikerül, amit tesz.</span> <span class="verse" data-verse="4"><sup class="verse-num">4</sup>Nem így járnak a bűnösök, hanem úgy, mint a polyva, amelyet szétszór a szél.</span>
-                                <br><br>
-                                <span class="verse" data-verse="5"><sup class="verse-num">5</sup>Ezért nem állhatnak meg a bűnösök az ítélet idején és a vétkesek az igazak közösségében.</span> <span class="verse" data-verse="6"><sup class="verse-num">6</sup>Mert ismeri az ÚR az igazak útját, a bűnösök útja pedig semmibe vész.</span>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    {% if readings.get('pr') %}
-                    <div class="reading-section mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Példabeszédek</h6>
-                            <button class="btn btn-sm btn-outline-primary toggle-text" data-target="pr-text">
-                                <i class="bi bi-eye"></i> Szöveg
-                            </button>
-                        </div>
-                        <p class="lead mb-2">{{ readings.pr }}</p>
-                        <div class="bible-text collapse show" id="pr-text">
-                            <div class="bible-content p-3 bg-light rounded" data-book="Péld">
-                                <span class="verse" data-verse="1"><sup class="verse-num">1</sup>Salamonnak, Dávid fiának, Izráel királyának példabeszédei.</span> <span class="verse" data-verse="2"><sup class="verse-num">2</sup>Azért adattak, hogy bölcsességet és fegyelmet tanuljunk, és megértsük az értelmes mondásokat.</span> <span class="verse" data-verse="3"><sup class="verse-num">3</sup>Hogy fegyelmezett és értelmes viselkedést tanuljunk, igazságosságot, törvényt és becsületet.</span>
-                                <br><br>
-                                <span class="verse" data-verse="4"><sup class="verse-num">4</sup>Hogy a tudatlanoknak okosságot adjanak, az ifjúnak ismeretet és meggondolást.</span> <span class="verse" data-verse="5"><sup class="verse-num">5</sup>Ha hallja ezeket a bölcs, gyarapodik a tudása, az értelmes ember megszívleli.</span>
-                                <br><br>
-                                <span class="verse" data-verse="6"><sup class="verse-num">6</sup>Megérti a példázatot és az elrejtett mondást, a bölcsek szavait és találós kérdéseit.</span> <span class="verse" data-verse="7"><sup class="verse-num">7</sup>Az ÚRnak félelme az ismeret kezdete, de a balgák megvetik a bölcsességet és a fegyelmet.</span>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
+                    {% endfor %}
                 {% else %}
                     <p class="text-muted">Erre a napra nincs olvasmány megadva.</p>
                 {% endif %}
             </div>
-            <div class="card-footer">
+            <div class="card-footer d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <button class="btn {{ 'btn-success' if is_read else 'btn-outline-success' }}" 
                         id="markReadBtn"
                         data-date="{{ date_str }}"
@@ -139,7 +93,37 @@
                     <i class="bi {{ 'bi-check-circle-fill' if is_read else 'bi-circle' }}"></i>
                     {{ 'Elolvasva ✓' if is_read else 'Megjelölés olvasottként' }}
                 </button>
+                
+                <!-- Olvasók száma -->
+                <div class="readers-info">
+                    {% if readers_count > 0 %}
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#readersList" aria-expanded="false">
+                        <i class="bi bi-people-fill"></i>
+                        <span class="readers-count">{{ readers_count }}</span> {{ 'személy' if readers_count == 1 else 'személy' }} olvasta el
+                    </button>
+                    {% else %}
+                    <span class="text-muted small">
+                        <i class="bi bi-people"></i> Még senki nem olvasta el
+                    </span>
+                    {% endif %}
+                </div>
             </div>
+            
+            <!-- Olvasók listája -->
+            {% if readers_count > 0 %}
+            <div class="collapse" id="readersList">
+                <div class="card-footer bg-light border-top-0">
+                    <small class="text-muted d-block mb-2"><i class="bi bi-check2-all"></i> Elolvasták:</small>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for reader in readers %}
+                        <span class="badge bg-success-subtle text-success-emphasis">
+                            <i class="bi bi-person-check"></i> {{ reader.name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         <!-- Kiemelések -->
@@ -284,7 +268,7 @@
     </div>
 
     <!-- Oldalsáv -->
-    <div class="col-lg-4">
+    <div class="col-lg-3">
         <!-- Ugrás napra -->
         <div class="card mb-4">
             <div class="card-header">

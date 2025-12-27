@@ -1,54 +1,237 @@
-/* Bibliaolvasási Terv - Stílusok */
+/* Bibliaolvasási Terv - Bambusz/Zöld Téma */
 
-/* Általános */
+/* ==========================================
+   CSS Változók - Színpaletta
+   ========================================== */
+:root {
+    /* Fő színek - természetes zöld tónusok */
+    --color-primary: #5a7c65;
+    --color-primary-dark: #3d5a45;
+    --color-primary-light: #7a9c85;
+    
+    /* Háttér színek - meleg, természetes */
+    --color-bg: #faf9f7;
+    --color-bg-card: #ffffff;
+    --color-bg-section: #f5f4f0;
+    --color-bg-hover: #efeee9;
+    
+    /* Szöveg színek */
+    --color-text: #3a3a3a;
+    --color-text-muted: #6b7280;
+    --color-text-light: #9ca3af;
+    
+    /* Akcentus színek */
+    --color-accent: #c9a227;
+    --color-accent-light: #f5edce;
+    --color-success: #5a8a5c;
+    --color-info: #5a7c8a;
+    --color-warning: #d4a84b;
+    
+    /* Árnyékok */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    
+    /* Lekerekítések */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    
+    /* Átmenetek */
+    --transition: all 0.2s ease;
+}
+
+/* ==========================================
+   Alapok
+   ========================================== */
 body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
 }
 
 main {
     flex: 1;
 }
 
-/* Kártyák */
+/* ==========================================
+   Navigációs sáv
+   ========================================== */
+.navbar-bamboo {
+    background: linear-gradient(135deg, var(--color-primary-dark) 0%, #2d4a35 100%);
+    box-shadow: var(--shadow-md);
+    padding: 0.75rem 1rem;
+}
+
+.navbar-bamboo .navbar-brand {
+    font-weight: 600;
+    color: #fff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.navbar-bamboo .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.navbar-bamboo .nav-link:hover {
+    color: #fff !important;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+}
+
+.navbar-bamboo .navbar-text {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.navbar-bamboo .btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.navbar-bamboo .btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.7);
+    color: #fff;
+}
+
+/* Linkek */
+a {
+    color: var(--color-primary);
+    transition: var(--transition);
+}
+
+a:hover {
+    color: var(--color-primary-dark);
+}
+
+/* ==========================================
+   Kártyák
+   ========================================== */
 .card {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background-color: var(--color-bg-card);
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
 }
 
 .card-header {
-    font-weight: 500;
+    background-color: transparent;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    font-weight: 600;
+    padding: 1rem 1.25rem;
 }
 
-/* Olvasási szakaszok */
+.card-header.bg-primary,
+.card-header.bg-bamboo {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%) !important;
+    color: #fff;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.card-header.bg-warning {
+    background: linear-gradient(135deg, var(--color-warning) 0%, #b8912e 100%) !important;
+    color: #fff;
+}
+
+.card-header.bg-info {
+    background: linear-gradient(135deg, var(--color-info) 0%, #456a75 100%) !important;
+    color: #fff;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.card-footer {
+    background-color: var(--color-bg-section);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 1rem 1.25rem;
+}
+
+/* Olvasók info */
+.readers-info .btn {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+}
+
+.readers-info .readers-count {
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+#readersList .card-footer {
+    padding-top: 0.75rem;
+}
+
+#readersList .badge {
+    font-weight: 500;
+    padding: 0.5em 0.75em;
+    font-size: 0.8rem;
+}
+
+.bg-success-subtle {
+    background-color: rgba(90, 138, 92, 0.15) !important;
+}
+
+.text-success-emphasis {
+    color: var(--color-primary-dark) !important;
+}
+
+/* ==========================================
+   Olvasási szakaszok
+   ========================================== */
 .reading-section {
-    padding: 10px 15px;
-    background-color: #f8f9fa;
-    border-left: 4px solid #0d6efd;
-    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    background-color: var(--color-bg-section);
+    border-left: 4px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    margin-bottom: 1rem;
+    transition: var(--transition);
+}
+
+.reading-section:hover {
+    background-color: var(--color-bg-hover);
 }
 
 .reading-section h6 {
-    color: #6c757d;
-    margin-bottom: 5px;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
 }
 
 .reading-section .lead {
     margin-bottom: 0;
     font-size: 1.1rem;
+    color: var(--color-text);
 }
 
-/* Bibliai szöveg megjelenítés */
+/* ==========================================
+   Bibliai szöveg
+   ========================================== */
 .bible-content {
-    font-family: 'Georgia', 'Times New Roman', serif;
+    font-family: 'Georgia', 'Cambria', 'Times New Roman', serif;
     font-size: 1.05rem;
-    line-height: 1.8;
+    line-height: 1.9;
     text-align: justify;
-    border-left: 3px solid #0d6efd;
+    border-left: 3px solid var(--color-primary-light);
+    background-color: var(--color-bg-card);
     max-height: 400px;
     overflow-y: auto;
     cursor: text;
     user-select: text;
+    padding: 1.25rem !important;
+    border-radius: var(--radius-sm);
 }
 
 .bible-content .verse {
@@ -56,28 +239,74 @@ main {
 }
 
 .bible-content .verse:hover {
-    background-color: rgba(255, 193, 7, 0.1);
-    border-radius: 2px;
+    background-color: var(--color-accent-light);
+    border-radius: 3px;
 }
 
 .bible-content .verse::selection,
 .bible-content .verse *::selection {
-    background-color: #ffc107;
-    color: #000;
+    background-color: var(--color-accent);
+    color: #fff;
 }
 
 .verse-num {
-    color: #0d6efd;
+    color: var(--color-primary);
     font-weight: bold;
-    font-size: 0.75rem;
-    margin-right: 2px;
+    font-size: 0.7rem;
+    margin-right: 3px;
     vertical-align: super;
     user-select: none;
+    opacity: 0.8;
 }
 
-/* Kijelölés panel */
+/* Szakasz címek (API-ból jövő fejlécek) */
+.section-title {
+    display: block;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--color-primary-dark);
+    margin: 0.75rem 0 0.5rem 0;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.verse .section-title {
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+/* Fordítás választó */
+.translation-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.translation-selector select {
+    font-size: 0.85rem;
+    padding: 0.25rem 1.75rem 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background-color: var(--color-bg-card);
+    color: var(--color-text);
+    cursor: pointer;
+    min-width: 70px;
+}
+
+.translation-selector select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(90, 124, 101, 0.2);
+}
+
+/* ==========================================
+   Kijelölés panel
+   ========================================== */
 #selectionHighlight {
-    border-left: 4px solid #ffc107;
+    border-left: 4px solid var(--color-accent);
+    background-color: var(--color-accent-light) !important;
+    border-radius: var(--radius-sm);
     animation: slideIn 0.3s ease-out;
 }
 
@@ -97,8 +326,18 @@ main {
     overflow-y: auto;
 }
 
+/* ==========================================
+   Szöveg toggle gomb
+   ========================================== */
 .toggle-text {
     font-size: 0.8rem;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.toggle-text:hover {
+    background-color: var(--color-primary);
+    color: #fff;
 }
 
 .toggle-text .bi-eye-slash {
@@ -113,14 +352,19 @@ main {
     display: inline;
 }
 
-/* Kommentek */
+/* ==========================================
+   Kommentek
+   ========================================== */
 .comment-item {
-    background-color: #f8f9fa;
-    transition: background-color 0.2s;
+    background-color: var(--color-bg-section);
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    border-left: 3px solid transparent;
 }
 
 .comment-item:hover {
-    background-color: #e9ecef;
+    background-color: var(--color-bg-hover);
+    border-left-color: var(--color-primary-light);
 }
 
 .comment-item.new-comment {
@@ -128,29 +372,35 @@ main {
 }
 
 @keyframes highlight-new {
-    from { background-color: #d1e7dd; }
-    to { background-color: #f8f9fa; }
+    from { background-color: rgba(90, 124, 101, 0.2); }
+    to { background-color: var(--color-bg-section); }
 }
 
-/* Kiemelések */
+/* ==========================================
+   Kiemelések
+   ========================================== */
 .highlight-item {
-    border-left: 4px solid #ffc107;
+    border-left: 4px solid var(--color-accent);
+    background-color: var(--color-accent-light) !important;
+    border-radius: var(--radius-sm);
 }
 
 .highlight-item.new-highlight {
-    animation: highlight-new-yellow 2s ease-out;
+    animation: highlight-new-gold 2s ease-out;
 }
 
-@keyframes highlight-new-yellow {
-    from { background-color: #fff3cd; }
-    to { background-color: rgba(255, 193, 7, 0.2); }
+@keyframes highlight-new-gold {
+    from { background-color: rgba(201, 162, 39, 0.4); }
+    to { background-color: var(--color-accent-light); }
 }
 
-/* Naptár */
+/* ==========================================
+   Naptár
+   ========================================== */
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
+    gap: 3px;
 }
 
 .calendar-day {
@@ -160,35 +410,38 @@ main {
     justify-content: center;
     font-size: 0.75rem;
     text-decoration: none;
-    color: #333;
-    border-radius: 4px;
+    color: var(--color-text);
+    border-radius: var(--radius-sm);
     position: relative;
-    transition: all 0.2s;
+    transition: var(--transition);
+    font-weight: 500;
 }
 
 .calendar-day.has-reading {
-    background-color: #e9ecef;
+    background-color: var(--color-bg-section);
 }
 
 .calendar-day.no-reading {
-    background-color: #f8f9fa;
-    color: #adb5bd;
+    background-color: var(--color-bg);
+    color: var(--color-text-light);
 }
 
 .calendar-day.is-read {
-    background-color: #198754;
+    background-color: var(--color-success);
     color: white;
 }
 
 .calendar-day.is-today {
-    border: 2px solid #0d6efd;
+    border: 2px solid var(--color-primary);
     font-weight: bold;
 }
 
 .calendar-day:hover {
     transform: scale(1.1);
     z-index: 1;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: var(--shadow-md);
+    background-color: var(--color-primary-light);
+    color: #fff;
 }
 
 .calendar-day .read-check {
@@ -198,61 +451,305 @@ main {
     right: 2px;
 }
 
-/* Responsive */
+/* ==========================================
+   Responsive
+   ========================================== */
 @media (max-width: 768px) {
+    .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    
+    /* Kisebb navbar mobilon */
+    .navbar-bamboo {
+        padding: 0.4rem 0.75rem;
+    }
+    
+    .navbar-bamboo .navbar-brand {
+        font-size: 0.95rem;
+    }
+    
+    .navbar-bamboo .navbar-toggler {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .navbar-bamboo .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .navbar-bamboo .navbar-text {
+        font-size: 0.85rem;
+        padding: 0.25rem 0;
+    }
+    
+    .navbar-bamboo .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
     .calendar-day {
         font-size: 0.65rem;
+    }
+    
+    .reading-section {
+        padding: 0.75rem 1rem;
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+        border-radius: var(--radius-sm);
     }
     
     .reading-section .lead {
         font-size: 1rem;
     }
+    
+    .bible-content {
+        font-size: 1rem;
+        line-height: 1.8;
+        padding: 0.75rem !important;
+        margin-left: -0.25rem;
+        margin-right: -0.25rem;
+    }
+    
+    .card-body {
+        padding: 0.875rem;
+    }
+    
+    .card {
+        border-radius: var(--radius-sm);
+    }
 }
 
-/* Animációk */
+/* ==========================================
+   Animációk
+   ========================================== */
 .fade-in {
     animation: fadeIn 0.3s ease-in;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { 
+        opacity: 0; 
+        transform: translateY(-10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }
 
-/* Bejelentkezési oldal */
+/* ==========================================
+   Bejelentkezési oldal
+   ========================================== */
+.login-card {
+    max-width: 420px;
+    margin: 2rem auto;
+}
+
+.login-card .card {
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.login-card .display-1 {
+    color: var(--color-primary) !important;
+}
+
 .card.shadow {
-    max-width: 400px;
+    max-width: 420px;
     margin: 0 auto;
+    border-radius: var(--radius-lg);
 }
 
-/* Footer */
+/* ==========================================
+   Footer
+   ========================================== */
 .footer {
     margin-top: auto;
+    background-color: var(--color-bg-section) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* Gombok */
+.footer small {
+    color: var(--color-text-muted);
+}
+
+/* ==========================================
+   Gombok
+   ========================================== */
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    border: none;
+    border-radius: var(--radius-sm);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary-dark) 100%);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-outline-primary {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--color-success) 0%, #4a7a4c 100%);
+    border: none;
+}
+
+.btn-outline-success {
+    color: var(--color-success);
+    border-color: var(--color-success);
+}
+
+.btn-outline-success:hover {
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--color-warning) 0%, #b8912e 100%);
+    border: none;
+    color: #fff;
+}
+
+.btn-warning:hover {
+    color: #fff;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, var(--color-info) 0%, #456a75 100%);
+    border: none;
+}
+
 .btn-outline-danger.delete-comment,
 .btn-outline-danger.delete-highlight {
-    padding: 2px 6px;
+    padding: 2px 8px;
     font-size: 0.75rem;
+    border-radius: var(--radius-sm);
 }
 
-/* Progress bar a statisztikákban */
+/* ==========================================
+   Form elemek
+   ========================================== */
+.form-control,
+.form-select {
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 0.6rem 1rem;
+    transition: var(--transition);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(90, 124, 101, 0.15);
+}
+
+/* ==========================================
+   Progress bar
+   ========================================== */
 .progress {
-    background-color: #e9ecef;
+    background-color: var(--color-bg-section);
+    border-radius: var(--radius-sm);
 }
 
-/* Badge-ek */
+.progress-bar {
+    background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-success) 100%);
+}
+
+.progress-bar.bg-success {
+    background: linear-gradient(90deg, var(--color-success) 0%, #4a7a4c 100%) !important;
+}
+
+/* ==========================================
+   Badge-ek
+   ========================================== */
+.badge {
+    font-weight: 500;
+    padding: 0.4em 0.8em;
+    border-radius: var(--radius-sm);
+}
+
+.badge.bg-primary {
+    background-color: var(--color-primary) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--color-success) !important;
+}
+
 .badge.bg-secondary {
+    background-color: var(--color-text-muted) !important;
     font-weight: normal;
 }
 
-/* Jelmagyarázat */
+/* ==========================================
+   Jelmagyarázat
+   ========================================== */
 .calendar-dot {
     display: inline-block;
-    width: 8px;
-    height: 8px;
-    background-color: #e9ecef;
+    width: 10px;
+    height: 10px;
+    background-color: var(--color-bg-section);
     border-radius: 50%;
-    margin-right: 4px;
+    margin-right: 5px;
+}
+
+/* ==========================================
+   Alertek
+   ========================================== */
+.alert {
+    border: none;
+    border-radius: var(--radius-sm);
+}
+
+.alert-success {
+    background-color: rgba(90, 138, 92, 0.15);
+    color: var(--color-success);
+}
+
+.alert-warning {
+    background-color: var(--color-accent-light);
+    color: #8a6d1b;
+}
+
+/* ==========================================
+   Scrollbar
+   ========================================== */
+.bible-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.bible-content::-webkit-scrollbar-track {
+    background: var(--color-bg-section);
+    border-radius: 3px;
+}
+
+.bible-content::-webkit-scrollbar-thumb {
+    background: var(--color-primary-light);
+    border-radius: 3px;
+}
+
+.bible-content::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+}
+
+/* ==========================================
+   Egyedi elemek
+   ========================================== */
+h2 .bi-calendar-event {
+    color: var(--color-primary);
+}
+
+.text-primary {
+    color: var(--color-primary) !important;
 }

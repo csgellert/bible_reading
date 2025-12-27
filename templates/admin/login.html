@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Bejelentkezés - Bibliaolvasási Terv{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white text-center">
+                <h4 class="mb-0"><i class="bi bi-shield-lock"></i> Admin Bejelentkezés</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Admin jelszó</label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               required autofocus placeholder="Admin jelszó">
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark">
+                            <i class="bi bi-box-arrow-in-right"></i> Belépés
+                        </button>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Vissza a bejelentkezéshez
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

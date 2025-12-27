@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Olvasási Tervek - Admin{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2><i class="bi bi-journal-bookmark"></i> Olvasási Tervek</h2>
+            <div>
+                <a href="{{ url_for('admin.create_plan_view') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Új terv
+                </a>
+                <a href="{{ url_for('admin.admin_logout') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-box-arrow-right"></i> Admin kilépés
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-10">
+        {% if plans %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Terv neve</th>
+                        <th>Leírás</th>
+                        <th>Terv fájl</th>
+                        <th>Felhasználók</th>
+                        <th>Létrehozva</th>
+                        <th>Műveletek</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in plans %}
+                    <tr>
+                        <td>{{ plan.id }}</td>
+                        <td><strong>{{ plan.name }}</strong></td>
+                        <td>{{ plan.description or '-' }}</td>
+                        <td><code>{{ plan.plan_file }}</code></td>
+                        <td>
+                            <span class="badge bg-info">{{ plan.user_count }} fő</span>
+                        </td>
+                        <td>{{ plan.created_at[:10] if plan.created_at else '-' }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.edit_plan', plan_id=plan.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% if plans|length > 1 %}
+                            <form action="{{ url_for('admin.delete_plan_view', plan_id=plan.id) }}" 
+                                  method="POST" class="d-inline"
+                                  onsubmit="return confirm('Biztosan törlöd a(z) {{ plan.name }} tervet és minden adatát?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Még nincsenek olvasási tervek.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-10">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5><i class="bi bi-info-circle"></i> Hogyan működik?</h5>
+                <ul class="mb-0">
+                    <li>Minden olvasási tervnek van egy <strong>egyedi jelszava</strong>.</li>
+                    <li>A felhasználók a jelszó alapján csatlakoznak egy tervhez.</li>
+                    <li>Minden terv különálló: saját felhasználók, kommentek, kiemelések, olvasási napló.</li>
+                    <li>Egy felhasználó több tervben is részt vehet (különböző jelszavakkal).</li>
+                    <li>A terv fájl határozza meg az olvasmányokat - különböző fájlok, különböző tervek.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

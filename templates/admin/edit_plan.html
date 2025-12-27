@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}{{ plan.name }} szerkesztése - Admin{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="bi bi-pencil"></i> {{ plan.name }}</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-key"></i> Jelszó módosítása</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Új jelszó</label>
+                        <input type="text" class="form-control" id="password" name="password" 
+                               placeholder="Új jelszó (üresen hagyva nem változik)">
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Mentés
+                        </button>
+                        <a href="{{ url_for('admin.plans') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Vissza
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Terv adatai</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">ID:</dt>
+                    <dd class="col-sm-8">{{ plan.id }}</dd>
+                    
+                    <dt class="col-sm-4">Terv fájl:</dt>
+                    <dd class="col-sm-8"><code>{{ plan.plan_file }}</code></dd>
+                    
+                    <dt class="col-sm-4">Leírás:</dt>
+                    <dd class="col-sm-8">{{ plan.description or '-' }}</dd>
+                    
+                    <dt class="col-sm-4">Létrehozva:</dt>
+                    <dd class="col-sm-8">{{ plan.created_at[:16] if plan.created_at else '-' }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-people"></i> Felhasználók ({{ users|length }})</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if users %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Név</th>
+                                <th class="text-center">Olvasott</th>
+                                <th class="text-center">Jegyzet</th>
+                                <th class="text-center">Kiemelés</th>
+                                <th class="text-end">Művelet</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>
+                                    <strong>{{ user.name }}</strong>
+                                    <br><small class="text-muted">{{ user.created_at[:10] if user.created_at else '' }}</small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-success">{{ user.stats.days_read }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-info">{{ user.stats.comments }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-warning text-dark">{{ user.stats.highlights }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <form action="{{ url_for('admin.delete_user_view', plan_id=plan.id, user_id=user.id) }}" 
+                                          method="POST" class="d-inline"
+                                          onsubmit="return confirm('Biztosan törlöd {{ user.name }} felhasználót és minden adatát ({{ user.stats.comments }} jegyzet, {{ user.stats.highlights }} kiemelés, {{ user.stats.days_read }} nap)?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-3">
+                    <p class="text-muted mb-0">Még nincsenek felhasználók ebben a tervben.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

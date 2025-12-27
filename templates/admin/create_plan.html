@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Új Olvasási Terv - Admin{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="bi bi-plus-lg"></i> Új Olvasási Terv</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Terv neve *</label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               required placeholder="pl. Bibliaolvasási Terv 2025">
+                        <div class="form-text">Ez jelenik meg a felhasználóknak bejelentkezés után.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Jelszó *</label>
+                        <input type="text" class="form-control" id="password" name="password" 
+                               required placeholder="Közös jelszó a résztvevőknek">
+                        <div class="form-text">Ezzel a jelszóval tudnak bejelentkezni a résztvevők.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="plan_file" class="form-label">Olvasási terv fájl</label>
+                        <select class="form-select" id="plan_file" name="plan_file">
+                            {% for file in plan_files %}
+                            <option value="{{ file }}">{{ file }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">A JSON fájl, ami az olvasmányokat tartalmazza.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Leírás (opcionális)</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="2" placeholder="Rövid leírás a tervről"></textarea>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Létrehozás
+                        </button>
+                        <a href="{{ url_for('admin.plans') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i> Mégse
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

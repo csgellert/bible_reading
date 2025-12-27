@@ -1,5 +1,8 @@
 // Bibliaolvasási Terv - Frontend JavaScript
 
+// Aktuális fordítás (localStorage-ból vagy alapértelmezett)
+let currentTranslation = localStorage.getItem('bibleTranslation') || 'SZIT';
+
 document.addEventListener('DOMContentLoaded', function() {
     // Aktuális dátum az URL-ből
     const pathParts = window.location.pathname.split('/');
@@ -13,7 +16,82 @@ document.addEventListener('DOMContentLoaded', function() {
     setupJumpToDateForm();
     setupTextToggle();
     setupTextSelection();
+    setupTranslationSelector();
+    
+    // Biblia versek betöltése
+    loadBibleVerses();
 });
+
+// Fordítás választó beállítása
+function setupTranslationSelector() {
+    const selector = document.getElementById('translationSelect');
+    if (!selector) return;
+    
+    // Beállítjuk az aktuális fordítást
+    selector.value = currentTranslation;
+    
+    // Változás figyelése
+    selector.addEventListener('change', function() {
+        currentTranslation = this.value;
+        localStorage.setItem('bibleTranslation', currentTranslation);
+        
+        // Versek újratöltése az új fordítással
+        loadBibleVerses();
+    });
+}
+
+// Biblia versek betöltése API-ból
+function loadBibleVerses() {
+    const bibleContents = document.querySelectorAll('.bible-content[data-reference]');
+    
+    bibleContents.forEach(content => {
+        const reference = content.dataset.reference;
+        if (!reference) return;
+        
+        // Betöltés jelzés
+        content.innerHTML = `
+            <div class="verse-loading text-center py-3">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="visually-hidden">Betöltés...</span>
+                </div>
+                <span class="ms-2 text-muted">Szöveg betöltése (${currentTranslation})...</span>
+            </div>
+        `;
+        
+        // API hívás a kiválasztott fordítással
+        fetch(`/api/verses/${encodeURIComponent(reference)}?translation=${currentTranslation}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.html) {
+                    content.innerHTML = data.html;
+                    // Újra beállítjuk a szöveg kijelölést az új tartalomhoz
+                    content.addEventListener('mouseup', handleTextSelection);
+                } else {
+                    content.innerHTML = `
+                        <p class="text-muted fst-italic mb-0">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            ${data.error || 'Nem sikerült betölteni a szöveget'}
+                        </p>
+                        <p class="small text-muted mt-2">
+                            <i class="bi bi-book"></i> ${reference}
+                        </p>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Hiba a versek betöltésekor:', error);
+                content.innerHTML = `
+                    <p class="text-muted fst-italic mb-0">
+                        <i class="bi bi-wifi-off"></i> 
+                        Hálózati hiba - nem sikerült betölteni
+                    </p>
+                    <p class="small text-muted mt-2">
+                        <i class="bi bi-book"></i> ${reference}
+                    </p>
+                `;
+            });
+    });
+}
 
 // Szöveg kijelölés kezelése
 let selectedVerseData = null;

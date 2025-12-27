@@ -20,6 +20,10 @@ wheels/
 .installed.cfg
 *.egg
 
+# test and utility files
+migrate_db.py
+READING_PLAN_FORMAT.md
+
 # Virtual Environment
 .venv/
 venv/
