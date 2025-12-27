@@ -3,6 +3,9 @@
 // Aktuális fordítás (localStorage-ból vagy alapértelmezett)
 let currentTranslation = localStorage.getItem('bibleTranslation') || 'SZIT';
 
+// Store event handlers for cleanup using WeakMap
+const eventHandlers = new WeakMap();
+
 document.addEventListener('DOMContentLoaded', function() {
     // Aktuális dátum az URL-ből
     const pathParts = window.location.pathname.split('/');
@@ -49,14 +52,10 @@ function loadBibleVerses() {
         if (!reference) return;
         
         // Remove old event listeners before adding new ones
-        const oldMouseupHandler = content._mouseupHandler;
-        const oldTouchendHandler = content._touchendHandler;
-        
-        if (oldMouseupHandler) {
-            content.removeEventListener('mouseup', oldMouseupHandler);
-        }
-        if (oldTouchendHandler) {
-            content.removeEventListener('touchend', oldTouchendHandler);
+        const oldHandlers = eventHandlers.get(content);
+        if (oldHandlers) {
+            content.removeEventListener('mouseup', oldHandlers.mouseup);
+            content.removeEventListener('touchend', oldHandlers.touchend);
         }
         
         // Betöltés jelzés
@@ -76,15 +75,19 @@ function loadBibleVerses() {
                 if (data.success && data.html) {
                     content.innerHTML = data.html;
                     
-                    // Create and store new event handlers
-                    const mouseupHandler = handleTextSelection;
+                    // Create event handler functions
+                    const mouseupHandler = function(e) {
+                        handleTextSelection.call(this, e);
+                    };
                     const touchendHandler = function(e) {
-                        setTimeout(() => handleTextSelection(e), 100);
+                        setTimeout(() => handleTextSelection.call(this, e), 100);
                     };
                     
-                    // Store handlers on the element for later removal
-                    content._mouseupHandler = mouseupHandler;
-                    content._touchendHandler = touchendHandler;
+                    // Store handlers in WeakMap for later removal
+                    eventHandlers.set(content, {
+                        mouseup: mouseupHandler,
+                        touchend: touchendHandler
+                    });
                     
                     // Add event listeners
                     content.addEventListener('mouseup', mouseupHandler);
