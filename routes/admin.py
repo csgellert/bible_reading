@@ -5,12 +5,11 @@ from models.database import (
     get_plan_by_id, get_all_users, delete_user, get_user_stats
 )
 import os
-from config import Config
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-# Admin jelszó - külön az olvasási tervek jelszavától
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD') or 'admin2025'
+# Admin jelszó a .env fájlból
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin2025')
 
 def admin_required(f):
     """Decorator: admin jogosultság szükséges"""
