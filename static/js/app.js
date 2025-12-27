@@ -66,10 +66,6 @@ function loadBibleVerses() {
                     content.innerHTML = data.html;
                     // Újra beállítjuk a szöveg kijelölést az új tartalomhoz
                     content.addEventListener('mouseup', handleTextSelection);
-                    // Mobil touch esemény
-                    content.addEventListener('touchend', function(e) {
-                        setTimeout(() => handleTextSelection(e), 100);
-                    });
                     // Kiemelések megjelölése a szövegben
                     applyHighlightsToText();
                 } else {
@@ -171,14 +167,9 @@ function setupTextSelection() {
     // Kijelölés figyelése a bibliai szövegeken
     document.querySelectorAll('.bible-content').forEach(content => {
         content.addEventListener('mouseup', handleTextSelection);
-        // Mobil eszközökön touchend és selectionchange esemény
-        content.addEventListener('touchend', function(e) {
-            // Kis késleltetés, hogy a kijelölés befejeződjön
-            setTimeout(() => handleTextSelection(e), 100);
-        });
     });
     
-    // Mobil eszközökön a selectionchange eseményt is figyeljük
+    // Mobil eszközökön a selectionchange eseményt figyeljük
     document.addEventListener('selectionchange', function() {
         const selection = window.getSelection();
         if (selection && selection.toString().trim().length >= 3) {
