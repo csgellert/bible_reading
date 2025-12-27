@@ -330,6 +330,17 @@ def format_verses_html(verses_data):
     html_parts = []
     current_chapter = None
     
+    # Számoljuk meg, hány különböző fejezet van
+    chapters_in_reading = set()
+    for verse in verses_data.get('verses', []):
+        ref = verse.get('reference', '')
+        chapter_match = re.search(r'(\d+),', ref)
+        if chapter_match:
+            chapters_in_reading.add(chapter_match.group(1))
+    
+    # Csak akkor jelenítjük meg a fejezetszámot, ha több fejezet van
+    show_chapter_headers = len(chapters_in_reading) > 1
+    
     for verse in verses_data.get('verses', []):
         text = verse.get('text', '')
         ref = verse.get('reference', '')
@@ -342,9 +353,15 @@ def format_verses_html(verses_data):
         chapter_match = re.search(r'(\d+),', ref)
         chapter = chapter_match.group(1) if chapter_match else ''
         
-        # Új fejezet jelzése
+        # Új fejezet jelzése fejezetszámmal
         if chapter and chapter != current_chapter:
-            if current_chapter is not None:
+            if show_chapter_headers:
+                # Kis hely az előző fejezet után
+                if current_chapter is not None:
+                    html_parts.append('<span class="chapter-break"></span>')
+                # Nagy fejezetszám a szöveg elején
+                html_parts.append(f'<span class="chapter-number">{chapter}</span>')
+            elif current_chapter is not None:
                 html_parts.append('<br><br>')
             current_chapter = chapter
         
