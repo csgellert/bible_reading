@@ -235,8 +235,7 @@
                                 <small class="text-muted">{{ comment.created_at }}</small>
                                 {% if comment.user_id == session.user_id %}
                                 <button class="btn btn-sm btn-outline-primary ms-2 edit-comment" 
-                                        data-id="{{ comment.id }}"
-                                        data-content="{{ comment.content }}">
+                                        data-id="{{ comment.id }}">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger delete-comment" 
