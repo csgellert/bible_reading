@@ -54,7 +54,11 @@
                         </div>
                         <small class="text-muted">
                             <i class="bi bi-clock"></i>
-                            {{ note.created_at[:16].replace('T', ' ') if 'T' in note.created_at else note.created_at[:16] }}
+                            {% if note.created_at is string %}
+                                {{ note.created_at[:16].replace('T', ' ') if 'T' in note.created_at else note.created_at[:16] }}
+                            {% else %}
+                                {{ note.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% endif %}
                         </small>
                     </div>
                     
