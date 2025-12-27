@@ -66,10 +66,6 @@ function loadBibleVerses() {
                     content.innerHTML = data.html;
                     // Újra beállítjuk a szöveg kijelölést az új tartalomhoz
                     content.addEventListener('mouseup', handleTextSelection);
-                    // Mobil touch esemény
-                    content.addEventListener('touchend', function(e) {
-                        setTimeout(() => handleTextSelection(e), 100);
-                    });
                     // Kiemelések megjelölése a szövegben
                     applyHighlightsToText();
                 } else {
