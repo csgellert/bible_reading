@@ -48,6 +48,17 @@ function loadBibleVerses() {
         const reference = content.dataset.reference;
         if (!reference) return;
         
+        // Remove old event listeners before adding new ones
+        const oldMouseupHandler = content._mouseupHandler;
+        const oldTouchendHandler = content._touchendHandler;
+        
+        if (oldMouseupHandler) {
+            content.removeEventListener('mouseup', oldMouseupHandler);
+        }
+        if (oldTouchendHandler) {
+            content.removeEventListener('touchend', oldTouchendHandler);
+        }
+        
         // Betöltés jelzés
         content.innerHTML = `
             <div class="verse-loading text-center py-3">
@@ -64,12 +75,21 @@ function loadBibleVerses() {
             .then(data => {
                 if (data.success && data.html) {
                     content.innerHTML = data.html;
-                    // Újra beállítjuk a szöveg kijelölést az új tartalomhoz
-                    content.addEventListener('mouseup', handleTextSelection);
-                    // Mobil touch esemény
-                    content.addEventListener('touchend', function(e) {
+                    
+                    // Create and store new event handlers
+                    const mouseupHandler = handleTextSelection;
+                    const touchendHandler = function(e) {
                         setTimeout(() => handleTextSelection(e), 100);
-                    });
+                    };
+                    
+                    // Store handlers on the element for later removal
+                    content._mouseupHandler = mouseupHandler;
+                    content._touchendHandler = touchendHandler;
+                    
+                    // Add event listeners
+                    content.addEventListener('mouseup', mouseupHandler);
+                    content.addEventListener('touchend', touchendHandler);
+                    
                     // Kiemelések megjelölése a szövegben
                     applyHighlightsToText();
                 } else {
