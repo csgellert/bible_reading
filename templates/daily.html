@@ -162,9 +162,12 @@
                 <!-- Kiemelések listája -->
                 <div id="highlightsList">
                     {% for highlight in highlights %}
-                    <div class="highlight-item p-2 mb-2 rounded" 
+                    <div class="highlight-item p-2 mb-2 rounded {% if highlight.user_id == session.user_id %}own-highlight{% endif %}" 
                          style="background-color: rgba(255, 193, 7, 0.2);"
-                         data-id="{{ highlight.id }}">
+                         data-id="{{ highlight.id }}"
+                         data-ref="{{ highlight.verse_ref }}"
+                         {% if highlight.user_id == session.user_id %}data-own="true"{% endif %}
+                         onclick="scrollToHighlightedVerse('{{ highlight.verse_ref }}')">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 {% if highlight.verse_ref %}
@@ -178,7 +181,8 @@
                             </div>
                             {% if highlight.user_id == session.user_id %}
                             <button class="btn btn-sm btn-outline-danger delete-highlight" 
-                                    data-id="{{ highlight.id }}">
+                                    data-id="{{ highlight.id }}"
+                                    onclick="event.stopPropagation();">
                                 <i class="bi bi-trash"></i>
                             </button>
                             {% endif %}
@@ -230,14 +234,31 @@
                             <div>
                                 <small class="text-muted">{{ comment.created_at }}</small>
                                 {% if comment.user_id == session.user_id %}
-                                <button class="btn btn-sm btn-outline-danger ms-2 delete-comment" 
+                                <button class="btn btn-sm btn-outline-primary ms-2 edit-comment" 
+                                        data-id="{{ comment.id }}"
+                                        data-content="{{ comment.content }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-comment" 
                                         data-id="{{ comment.id }}">
                                     <i class="bi bi-trash"></i>
                                 </button>
                                 {% endif %}
                             </div>
                         </div>
-                        <p class="mb-0">{{ comment.content }}</p>
+                        <p class="mb-0 comment-content">{{ comment.content }}</p>
+                        <!-- Szerkesztő űrlap (alapból rejtett) -->
+                        <div class="edit-form d-none mt-2">
+                            <textarea class="form-control mb-2 edit-textarea" rows="3">{{ comment.content }}</textarea>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-success save-edit" data-id="{{ comment.id }}">
+                                    <i class="bi bi-check"></i> Mentés
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary cancel-edit">
+                                    <i class="bi bi-x"></i> Mégse
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     {% else %}
                     <p class="text-muted mb-0" id="noComments">

@@ -337,6 +337,26 @@ a:hover {
     }
 }
 
+/* Komment szerkesztés */
+.comment-item {
+    transition: background-color 0.3s ease;
+}
+
+.comment-item .edit-form textarea {
+    font-size: 0.95rem;
+}
+
+.comment-item .edit-comment,
+.comment-item .delete-comment {
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.comment-item:hover .edit-comment,
+.comment-item:hover .delete-comment {
+    opacity: 1;
+}
+
 /* Fordítás választó */
 .translation-selector {
     display: flex;
@@ -444,6 +464,29 @@ a:hover {
     border-left: 4px solid var(--color-accent);
     background-color: var(--color-accent-light) !important;
     border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.highlight-item:hover {
+    background-color: rgba(201, 162, 39, 0.35) !important;
+    transform: translateX(2px);
+}
+
+/* Saját kiemelések kiemelt megjelenítése */
+.highlight-item.own-highlight {
+    border-left-color: var(--color-success);
+    position: relative;
+}
+
+.highlight-item.own-highlight::before {
+    content: "✓";
+    position: absolute;
+    top: 4px;
+    left: -20px;
+    color: var(--color-success);
+    font-size: 0.75rem;
+    font-weight: bold;
 }
 
 .highlight-item.new-highlight {
@@ -453,6 +496,25 @@ a:hover {
 @keyframes highlight-new-gold {
     from { background-color: rgba(201, 162, 39, 0.4); }
     to { background-color: var(--color-accent-light); }
+}
+
+/* Szövegben lévő kiemelések */
+.verse.user-highlighted {
+    background-color: rgba(255, 235, 59, 0.3);
+    border-radius: 3px;
+    padding: 1px 0;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+.verse.highlight-flash {
+    animation: verse-flash 2s ease-out;
+}
+
+@keyframes verse-flash {
+    0%, 20%, 40%, 60% { background-color: rgba(255, 193, 7, 0.6); }
+    10%, 30%, 50% { background-color: rgba(255, 235, 59, 0.3); }
+    100% { background-color: rgba(255, 235, 59, 0.3); }
 }
 
 /* ==========================================
