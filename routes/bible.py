@@ -61,8 +61,23 @@ def get_date_string(date_str):
 @bible_bp.route('/')
 @login_required
 def index():
-    """Főoldal - átirányítás a mai napra"""
-    return redirect(url_for('bible.daily'))
+    """Főoldal - terv leírása"""
+    plan_id = session.get('plan_id')
+    plan = get_plan_by_id(plan_id)
+    
+    # Olvasási statisztikák
+    user_reading_log = get_reading_log(session['user_id'], plan_id)
+    stats = get_all_reading_stats(plan_id)
+    
+    # Összes nap a tervben
+    reading_plan = load_reading_plan(plan_id)
+    total_days = len(reading_plan)
+    
+    return render_template('home.html',
+                         plan=plan,
+                         total_days=total_days,
+                         days_read=len(user_reading_log),
+                         stats=stats)
 
 @bible_bp.route('/daily')
 @bible_bp.route('/daily/<date_str>')

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}{{ plan.name if plan else 'Bibliaolvasási Terv' }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-book"></i> {{ plan.name if plan else 'Bibliaolvasási Terv' }}</h4>
+            </div>
+            <div class="card-body">
+                {% if plan and plan.description %}
+                <div class="plan-description mb-4">
+                    {{ plan.description | safe }}
+                </div>
+                {% else %}
+                <p class="text-muted">
+                    <i class="bi bi-info-circle"></i> Ehhez a tervhez még nincs leírás megadva.
+                </p>
+                {% endif %}
+                
+                <hr>
+                
+                <div class="d-flex flex-wrap gap-3 justify-content-center">
+                    <a href="{{ url_for('bible.daily') }}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-calendar-day"></i> Mai olvasmány
+                    </a>
+                    <a href="{{ url_for('bible.calendar') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-calendar3"></i> Naptár nézet
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mt-4 mt-lg-0">
+        <!-- Személyes haladás -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Haladásod</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="display-4 text-primary">{{ days_read }}</div>
+                    <div class="text-muted">nap elolvasva</div>
+                </div>
+                
+                {% if total_days > 0 %}
+                <div class="progress mb-2" style="height: 20px;">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: {{ (days_read / total_days * 100) | round(1) }}%"
+                         aria-valuenow="{{ days_read }}" aria-valuemin="0" aria-valuemax="{{ total_days }}">
+                        {{ (days_read / total_days * 100) | round(1) }}%
+                    </div>
+                </div>
+                <p class="text-muted text-center small mb-0">
+                    {{ total_days }} napból {{ days_read }} kész
+                </p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Közösség statisztika -->
+        {% if stats and stats|length > 0 %}
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-people"></i> Résztvevők</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for stat in stats[:5] %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            {% if stat.name == session.username %}
+                            <strong>{{ stat.name }}</strong> <span class="text-muted">(te)</span>
+                            {% else %}
+                            {{ stat.name }}
+                            {% endif %}
+                        </span>
+                        <span class="badge bg-success rounded-pill">{{ stat.days_read }} nap</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% if stats|length > 5 %}
+                <div class="card-footer text-center">
+                    <small class="text-muted">és még {{ stats|length - 5 }} résztvevő...</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .plan-description {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: var(--color-text);
+    }
+    
+    .plan-description p {
+        margin-bottom: 1rem;
+    }
+    
+    .plan-description ul, .plan-description ol {
+        margin-bottom: 1rem;
+        padding-left: 1.5rem;
+    }
+    
+    .plan-description li {
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}

@@ -176,6 +176,20 @@ def update_plan_password(plan_id, new_password):
     conn.close()
 
 
+def update_plan(plan_id, name=None, description=None):
+    """Olvasási terv adatainak módosítása"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    if name is not None:
+        cursor.execute('UPDATE reading_plans SET name = ? WHERE id = ?', (name, plan_id))
+    if description is not None:
+        cursor.execute('UPDATE reading_plans SET description = ? WHERE id = ?', (description, plan_id))
+    
+    conn.commit()
+    conn.close()
+
+
 def delete_plan(plan_id):
     """Olvasási terv törlése (és minden kapcsolódó adat)"""
     conn = get_db_connection()

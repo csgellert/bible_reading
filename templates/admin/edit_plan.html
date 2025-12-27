@@ -11,12 +11,28 @@
 
 <div class="row">
     <div class="col-lg-6">
+        <!-- Terv adatai szerkesztése -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-key"></i> Jelszó módosítása</h5>
+                <h5 class="mb-0"><i class="bi bi-gear"></i> Terv beállításai</h5>
             </div>
             <div class="card-body">
                 <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Terv neve</label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ plan.name }}" placeholder="Terv neve">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Leírás</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="6" placeholder="Terv leírása (HTML támogatott)">{{ plan.description or '' }}</textarea>
+                        <small class="text-muted">HTML formázás támogatott (p, ul, li, strong, em, stb.)</small>
+                    </div>
+                    
+                    <hr>
+                    
                     <div class="mb-3">
                         <label for="password" class="form-label">Új jelszó</label>
                         <input type="text" class="form-control" id="password" name="password" 
@@ -37,7 +53,7 @@
         
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Terv adatai</h5>
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Technikai adatok</h5>
             </div>
             <div class="card-body">
                 <dl class="row mb-0">
@@ -46,9 +62,6 @@
                     
                     <dt class="col-sm-4">Terv fájl:</dt>
                     <dd class="col-sm-8"><code>{{ plan.plan_file }}</code></dd>
-                    
-                    <dt class="col-sm-4">Leírás:</dt>
-                    <dd class="col-sm-8">{{ plan.description or '-' }}</dd>
                     
                     <dt class="col-sm-4">Létrehozva:</dt>
                     <dd class="col-sm-8">{{ plan.created_at[:16] if plan.created_at else '-' }}</dd>

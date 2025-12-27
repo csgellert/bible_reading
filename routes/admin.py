@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from functools import wraps
 from models.database import (
-    get_all_plans, create_plan, delete_plan, update_plan_password,
+    get_all_plans, create_plan, delete_plan, update_plan_password, update_plan,
     get_plan_by_id, get_all_users, delete_user, get_user_stats
 )
 import os
@@ -105,12 +105,20 @@ def edit_plan(plan_id):
     
     if request.method == 'POST':
         new_password = request.form.get('password', '').strip()
+        new_name = request.form.get('name', '').strip()
+        new_description = request.form.get('description', '').strip()
         
         if new_password:
             update_plan_password(plan_id, new_password)
-            flash(f'Jelszó módosítva: {plan["name"]}', 'success')
+            flash('Jelszó módosítva!', 'success')
         
-        return redirect(url_for('admin.plans'))
+        if new_name or new_description is not None:
+            update_plan(plan_id, 
+                       name=new_name if new_name else None,
+                       description=new_description)
+            flash('Terv adatai módosítva!', 'success')
+        
+        return redirect(url_for('admin.edit_plan', plan_id=plan_id))
     
     users = get_all_users(plan_id)
     
