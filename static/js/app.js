@@ -54,13 +54,6 @@ function loadBibleVerses() {
         const reference = content.dataset.reference;
         if (!reference) return;
         
-        // Remove old event listeners before adding new ones
-        const oldHandlers = eventHandlers.get(content);
-        if (oldHandlers) {
-            content.removeEventListener('mouseup', oldHandlers.mouseup);
-            content.removeEventListener('touchend', oldHandlers.touchend);
-        }
-        
         // Betöltés jelzés
         content.innerHTML = `
             <div class="verse-loading text-center py-3">
