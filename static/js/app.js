@@ -70,25 +70,8 @@ function loadBibleVerses() {
             .then(data => {
                 if (data.success && data.html) {
                     content.innerHTML = data.html;
-                    
-                    // Create event handler functions (wrappers needed for proper cleanup)
-                    const mouseupHandler = function(e) {
-                        handleTextSelection(e);
-                    };
-                    const touchendHandler = function(e) {
-                        setTimeout(() => handleTextSelection(e), TOUCH_SELECTION_DELAY);
-                    };
-                    
-                    // Store handlers in WeakMap for later removal
-                    eventHandlers.set(content, {
-                        mouseup: mouseupHandler,
-                        touchend: touchendHandler
-                    });
-                    
-                    // Add event listeners
-                    content.addEventListener('mouseup', mouseupHandler);
-                    content.addEventListener('touchend', touchendHandler);
-                    
+                    // Újra beállítjuk a szöveg kijelölést az új tartalomhoz
+                    content.addEventListener('mouseup', handleTextSelection);
                     // Kiemelések megjelölése a szövegben
                     applyHighlightsToText();
                 } else {
@@ -187,10 +170,12 @@ function scrollToHighlightedVerse(verseRef) {
 let selectedVerseData = null;
 
 function setupTextSelection() {
-    // Note: Event listeners for .bible-content elements are added dynamically
-    // in loadBibleVerses() after the content is loaded from the API
+    // Kijelölés figyelése a bibliai szövegeken
+    document.querySelectorAll('.bible-content').forEach(content => {
+        content.addEventListener('mouseup', handleTextSelection);
+    });
     
-    // Mobil eszközökön a selectionchange eseményt is figyeljük
+    // Mobil eszközökön a selectionchange eseményt figyeljük
     document.addEventListener('selectionchange', function() {
         const selection = window.getSelection();
         if (selection && selection.toString().trim().length >= 3) {
