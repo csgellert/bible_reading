@@ -926,6 +926,11 @@ async function togglePrivacy(targetType, targetId, button) {
             })
         });
         
+        if (!response.ok) {
+            console.error('Hiba a privát beállítás mentésekor: HTTP hiba', response.status, response.statusText);
+            return;
+        }
+        
         const data = await response.json();
         
         if (data.success) {
