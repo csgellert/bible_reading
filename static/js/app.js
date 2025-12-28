@@ -880,6 +880,11 @@ async function toggleReaction(targetType, targetId, button) {
                 target_id: targetId
             })
         });
+
+        if (!response.ok) {
+            console.error('Sikertelen reakció kérés:', response.status, response.statusText);
+            throw new Error('HTTP error ' + response.status);
+        }
         
         const data = await response.json();
         
