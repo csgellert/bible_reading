@@ -166,10 +166,9 @@
                          style="background-color: rgba(255, 193, 7, 0.2);"
                          data-id="{{ highlight.id }}"
                          data-ref="{{ highlight.verse_ref }}"
-                         {% if highlight.user_id == session.user_id %}data-own="true"{% endif %}
-                         onclick="scrollToHighlightedVerse(this.dataset.ref)">
+                         {% if highlight.user_id == session.user_id %}data-own="true"{% endif %}>
                         <div class="d-flex justify-content-between align-items-start">
-                            <div>
+                            <div class="flex-grow-1" onclick="scrollToHighlightedVerse(this.closest('.highlight-item').dataset.ref)" style="cursor: pointer;">
                                 {% if highlight.verse_ref %}
                                 <strong class="text-primary">{{ highlight.verse_ref }}:</strong>
                                 {% endif %}
@@ -177,15 +176,42 @@
                                 <br>
                                 <small class="text-muted">
                                     <i class="bi bi-person"></i> {{ highlight.user_name }}
+                                    {% if highlight.is_private %}
+                                    <i class="bi bi-lock-fill text-secondary ms-1" title="Privát"></i>
+                                    {% endif %}
                                 </small>
                             </div>
-                            {% if highlight.user_id == session.user_id %}
-                            <button class="btn btn-sm btn-outline-danger delete-highlight" 
-                                    data-id="{{ highlight.id }}"
-                                    onclick="event.stopPropagation();">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                            {% endif %}
+                            <div class="d-flex align-items-center gap-1">
+                                <!-- Like gomb -->
+                                {% if highlight.user_id != session.user_id %}
+                                <button class="btn btn-sm {% if highlight.user_reacted %}btn-danger{% else %}btn-outline-danger{% endif %} reaction-btn" 
+                                        data-type="highlight" data-id="{{ highlight.id }}"
+                                        onclick="event.stopPropagation(); toggleReaction('highlight', {{ highlight.id }}, this);">
+                                    <i class="bi bi-heart{% if highlight.user_reacted %}-fill{% endif %}"></i>
+                                    <span class="reaction-count">{{ highlight.reaction_count or '' }}</span>
+                                </button>
+                                {% else %}
+                                <!-- Reakciók számának megjelenítése a saját kiemeléseken -->
+                                {% if highlight.reaction_count > 0 %}
+                                <span class="badge bg-danger-subtle text-danger">
+                                    <i class="bi bi-heart-fill"></i> {{ highlight.reaction_count }}
+                                </span>
+                                {% endif %}
+                                <!-- Privát toggle -->
+                                <button class="btn btn-sm btn-outline-secondary privacy-btn" 
+                                        data-type="highlight" data-id="{{ highlight.id }}"
+                                        data-private="{{ 'true' if highlight.is_private else 'false' }}"
+                                        onclick="event.stopPropagation(); togglePrivacy('highlight', {{ highlight.id }}, this);"
+                                        title="{% if highlight.is_private %}Nyilvánossá tétel{% else %}Priváttá tétel{% endif %}">
+                                    <i class="bi bi-{% if highlight.is_private %}lock-fill{% else %}unlock{% endif %}"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-highlight" 
+                                        data-id="{{ highlight.id }}"
+                                        onclick="event.stopPropagation();">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                     {% else %}
@@ -230,11 +256,28 @@
                                 {% if comment.verse_ref %}
                                 <span class="badge bg-secondary ms-2">{{ comment.verse_ref }}</span>
                                 {% endif %}
+                                {% if comment.is_private %}
+                                <i class="bi bi-lock-fill text-secondary ms-1" title="Privát"></i>
+                                {% endif %}
                             </div>
-                            <div>
-                                <small class="text-muted">{{ comment.created_at }}</small>
+                            <div class="d-flex align-items-center gap-1">
+                                <small class="text-muted me-2">
+                                    {% if comment.created_at is string %}
+                                        {{ comment.created_at[:16].replace('T', ' ') if 'T' in comment.created_at else comment.created_at[:16] }}
+                                    {% else %}
+                                        {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                    {% endif %}
+                                </small>
                                 {% if comment.user_id == session.user_id %}
-                                <button class="btn btn-sm btn-outline-primary ms-2 edit-comment" 
+                                <!-- Privát toggle -->
+                                <button class="btn btn-sm btn-outline-secondary privacy-btn" 
+                                        data-type="comment" data-id="{{ comment.id }}"
+                                        data-private="{{ 'true' if comment.is_private else 'false' }}"
+                                        onclick="togglePrivacy('comment', {{ comment.id }}, this);"
+                                        title="{% if comment.is_private %}Nyilvánossá tétel{% else %}Priváttá tétel{% endif %}">
+                                    <i class="bi bi-{% if comment.is_private %}lock-fill{% else %}unlock{% endif %}"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary edit-comment" 
                                         data-id="{{ comment.id }}">
                                     <i class="bi bi-pencil"></i>
                                 </button>
@@ -245,7 +288,75 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <p class="mb-0 comment-content">{{ comment.content }}</p>
+                        <p class="mb-2 comment-content">{{ comment.content }}</p>
+                        
+                        <!-- Reakciók és válasz gomb -->
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            {% if comment.user_id != session.user_id %}
+                            <button class="btn btn-sm {% if comment.user_reacted %}btn-danger{% else %}btn-outline-danger{% endif %} reaction-btn" 
+                                    data-type="comment" data-id="{{ comment.id }}"
+                                    onclick="toggleReaction('comment', {{ comment.id }}, this);">
+                                <i class="bi bi-heart{% if comment.user_reacted %}-fill{% endif %}"></i>
+                                <span class="reaction-count">{{ comment.reaction_count or '' }}</span>
+                            </button>
+                            {% else %}
+                            {% if comment.reaction_count > 0 %}
+                            <span class="badge bg-danger-subtle text-danger">
+                                <i class="bi bi-heart-fill"></i> {{ comment.reaction_count }}
+                            </span>
+                            {% endif %}
+                            {% endif %}
+                            <button class="btn btn-sm btn-outline-secondary reply-toggle-btn" 
+                                    onclick="toggleReplyForm({{ comment.id }});">
+                                <i class="bi bi-chat-left"></i> Válasz
+                                {% if comment.replies|length > 0 %}
+                                <span class="badge bg-secondary">{{ comment.replies|length }}</span>
+                                {% endif %}
+                            </button>
+                        </div>
+                        
+                        <!-- Válaszok megjelenítése -->
+                        {% if comment.replies|length > 0 %}
+                        <div class="replies-container ms-4 border-start ps-3">
+                            {% for reply in comment.replies %}
+                            <div class="reply-item small mb-2 p-2 bg-light rounded" data-reply-id="{{ reply.id }}">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong class="text-primary">{{ reply.user_name }}</strong>
+                                        <span class="text-muted ms-2">
+                                            {% if reply.created_at is string %}
+                                                {{ reply.created_at[:16].replace('T', ' ') if 'T' in reply.created_at else reply.created_at[:16] }}
+                                            {% else %}
+                                                {{ reply.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    {% if reply.user_id == session.user_id %}
+                                    <button class="btn btn-sm btn-outline-danger py-0 px-1" 
+                                            onclick="deleteReply({{ reply.id }}, this);">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                <p class="mb-0 mt-1">{{ reply.content }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Válasz űrlap (rejtett) -->
+                        <div class="reply-form d-none ms-4 mt-2" id="reply-form-{{ comment.id }}">
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-sm reply-input" 
+                                       placeholder="Írd ide a válaszod..." 
+                                       onkeypress="if(event.key==='Enter') submitReply({{ comment.id }}, this);">
+                                <button class="btn btn-sm btn-info text-white" 
+                                        onclick="submitReply({{ comment.id }}, this.previousElementSibling);">
+                                    <i class="bi bi-send"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
                         <!-- Szerkesztő űrlap (alapból rejtett) -->
                         <div class="edit-form d-none mt-2">
                             <textarea class="form-control mb-2 edit-textarea" rows="3">{{ comment.content }}</textarea>

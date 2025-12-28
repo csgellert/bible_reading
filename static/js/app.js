@@ -863,3 +863,239 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+// ==========================================
+// Reakciók (like/szívecske) kezelése
+// ==========================================
+
+async function toggleReaction(targetType, targetId, button) {
+    try {
+        const response = await fetch('/api/reaction', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                target_type: targetType,
+                target_id: targetId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const icon = button.querySelector('i');
+            const countSpan = button.querySelector('.reaction-count');
+            
+            if (data.action === 'added') {
+                button.classList.remove('btn-outline-danger');
+                button.classList.add('btn-danger');
+                icon.classList.remove('bi-heart');
+                icon.classList.add('bi-heart-fill');
+            } else {
+                button.classList.remove('btn-danger');
+                button.classList.add('btn-outline-danger');
+                icon.classList.remove('bi-heart-fill');
+                icon.classList.add('bi-heart');
+            }
+            
+            countSpan.textContent = data.count > 0 ? data.count : '';
+        }
+    } catch (error) {
+        console.error('Hiba a reakció mentésekor:', error);
+    }
+}
+
+
+// ==========================================
+// Privát beállítás kezelése
+// ==========================================
+
+async function togglePrivacy(targetType, targetId, button) {
+    const currentlyPrivate = button.dataset.private === 'true';
+    const newPrivate = !currentlyPrivate;
+    
+    try {
+        const response = await fetch(`/api/${targetType}/${targetId}/privacy`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                is_private: newPrivate
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const icon = button.querySelector('i');
+            button.dataset.private = newPrivate ? 'true' : 'false';
+            
+            if (newPrivate) {
+                icon.classList.remove('bi-unlock');
+                icon.classList.add('bi-lock-fill');
+                button.title = 'Nyilvánossá tétel';
+            } else {
+                icon.classList.remove('bi-lock-fill');
+                icon.classList.add('bi-unlock');
+                button.title = 'Priváttá tétel';
+            }
+            
+            // Privát ikon megjelenítése/elrejtése a tartalomnál
+            const item = button.closest('.comment-item, .highlight-item');
+            if (item) {
+                let lockIcon = item.querySelector('.text-muted .bi-lock-fill');
+                if (newPrivate && !lockIcon) {
+                    const userInfo = item.querySelector('.text-muted');
+                    if (userInfo) {
+                        const newLockIcon = document.createElement('i');
+                        newLockIcon.className = 'bi bi-lock-fill text-secondary ms-1';
+                        newLockIcon.title = 'Privát';
+                        userInfo.appendChild(newLockIcon);
+                    }
+                } else if (!newPrivate && lockIcon) {
+                    lockIcon.remove();
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Hiba a privát beállítás mentésekor:', error);
+    }
+}
+
+
+// ==========================================
+// Válasz kommentek kezelése
+// ==========================================
+
+function toggleReplyForm(commentId) {
+    const form = document.getElementById(`reply-form-${commentId}`);
+    if (form) {
+        form.classList.toggle('d-none');
+        if (!form.classList.contains('d-none')) {
+            form.querySelector('.reply-input').focus();
+        }
+    }
+}
+
+async function submitReply(commentId, inputElement) {
+    const content = inputElement.value.trim();
+    if (!content) return;
+    
+    try {
+        const response = await fetch(`/api/comment/${commentId}/reply`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                content: content
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Űrlap ürítése és elrejtése
+            inputElement.value = '';
+            toggleReplyForm(commentId);
+            
+            // Válasz hozzáadása a DOM-hoz
+            addReplyToDOM(commentId, data.id, data.user_name, data.content);
+            
+            // Válasz szám frissítése a gombon
+            const replyBtn = document.querySelector(`.comment-item[data-id="${commentId}"] .reply-toggle-btn`);
+            if (replyBtn) {
+                let badge = replyBtn.querySelector('.badge');
+                if (badge) {
+                    badge.textContent = parseInt(badge.textContent) + 1;
+                } else {
+                    badge = document.createElement('span');
+                    badge.className = 'badge bg-secondary';
+                    badge.textContent = '1';
+                    replyBtn.appendChild(badge);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Hiba a válasz mentésekor:', error);
+        alert('Hiba történt a válasz mentésekor.');
+    }
+}
+
+function addReplyToDOM(commentId, replyId, userName, content) {
+    const commentItem = document.querySelector(`.comment-item[data-id="${commentId}"]`);
+    if (!commentItem) return;
+    
+    let repliesContainer = commentItem.querySelector('.replies-container');
+    
+    // Ha nincs még válasz konténer, létrehozzuk
+    if (!repliesContainer) {
+        repliesContainer = document.createElement('div');
+        repliesContainer.className = 'replies-container ms-4 border-start ps-3';
+        const replyForm = commentItem.querySelector('.reply-form');
+        replyForm.parentNode.insertBefore(repliesContainer, replyForm);
+    }
+    
+    const now = new Date();
+    const timestamp = now.toISOString().slice(0, 16).replace('T', ' ');
+    
+    const replyHtml = `
+        <div class="reply-item small mb-2 p-2 bg-light rounded fade-in" data-reply-id="${replyId}">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <strong class="text-primary">${escapeHtml(userName)}</strong>
+                    <span class="text-muted ms-2">${timestamp}</span>
+                </div>
+                <button class="btn btn-sm btn-outline-danger py-0 px-1" 
+                        onclick="deleteReply(${replyId}, this);">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <p class="mb-0 mt-1">${escapeHtml(content)}</p>
+        </div>
+    `;
+    
+    repliesContainer.insertAdjacentHTML('beforeend', replyHtml);
+}
+
+async function deleteReply(replyId, button) {
+    if (!confirm('Biztosan törlöd ezt a választ?')) return;
+    
+    try {
+        const response = await fetch(`/api/reply/${replyId}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const replyItem = button.closest('.reply-item');
+            const commentItem = button.closest('.comment-item');
+            
+            if (replyItem) {
+                replyItem.remove();
+                
+                // Válasz szám frissítése
+                const replyBtn = commentItem.querySelector('.reply-toggle-btn .badge');
+                if (replyBtn) {
+                    const newCount = parseInt(replyBtn.textContent) - 1;
+                    if (newCount > 0) {
+                        replyBtn.textContent = newCount;
+                    } else {
+                        replyBtn.remove();
+                    }
+                }
+                
+                // Ha nincs több válasz, eltávolítjuk a konténert
+                const repliesContainer = commentItem.querySelector('.replies-container');
+                if (repliesContainer && repliesContainer.children.length === 0) {
+                    repliesContainer.remove();
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Hiba a válasz törlésekor:', error);
+    }
+}

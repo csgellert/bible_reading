@@ -23,6 +23,7 @@ wheels/
 # test and utility files
 migrate_db.py
 READING_PLAN_FORMAT.md
+migrations/
 
 # Virtual Environment
 .venv/

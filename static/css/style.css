@@ -518,6 +518,54 @@ a:hover {
 }
 
 /* ==========================================
+   Reakciók és válaszok
+   ========================================== */
+.reaction-btn {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.8rem;
+}
+
+.reaction-btn .reaction-count {
+    font-size: 0.75rem;
+    margin-left: 2px;
+}
+
+.privacy-btn {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.8rem;
+}
+
+.reply-toggle-btn {
+    font-size: 0.8rem;
+}
+
+.replies-container {
+    margin-top: 0.75rem;
+    border-left-color: var(--color-primary-light) !important;
+}
+
+.reply-item {
+    background-color: var(--color-bg-section) !important;
+}
+
+.reply-item.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.reply-form .input-group {
+    max-width: 100%;
+}
+
+.reply-input {
+    font-size: 0.9rem;
+}
+
+/* ==========================================
    Naptár
    ========================================== */
 .calendar-grid {
