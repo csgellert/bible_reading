@@ -999,6 +999,10 @@ async function submitReply(commentId, inputElement) {
             })
         });
         
+        if (!response.ok) {
+            throw new Error(`HTTP error when submitting reply: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         if (data.success) {
