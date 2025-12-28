@@ -1077,6 +1077,12 @@ async function deleteReply(replyId, button) {
             method: 'DELETE'
         });
         
+        if (!response.ok) {
+            console.error('Hiba a válasz törlésekor: HTTP hiba', response.status, response.statusText);
+            alert('A válasz törlése nem sikerült. Kérlek, próbáld meg később újra.');
+            return;
+        }
+        
         const data = await response.json();
         
         if (data.success) {
