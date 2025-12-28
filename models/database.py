@@ -611,13 +611,38 @@ def get_highlights_for_date(date, plan_id, current_user_id=None):
         ORDER BY h.created_at DESC
     ''', (date, plan_id, current_user_id or 0))
     highlights = [dict(row) for row in cursor.fetchall()]
-    conn.close()
     
-    # Reakciók hozzáadása minden kiemeléshez
+    # Reakciók hozzáadása minden kiemeléshez (N+1 lekérdezés elkerülése érdekében batch-ben töltjük)
+    highlight_ids = [h['id'] for h in highlights]
+    reactions_by_highlight = {hid: [] for hid in highlight_ids}
+
+    if highlight_ids:
+        # Dinamikus IN lista a highlight azonosítókhoz
+        in_placeholders = ', '.join([p] * len(highlight_ids))
+        cursor.execute(
+            f'''
+            SELECT *
+            FROM reactions
+            WHERE target_type = {p}
+              AND target_id IN ({in_placeholders})
+            ''',
+            tuple(['highlight'] + highlight_ids),
+        )
+
+        for row in cursor.fetchall():
+            row_dict = dict(row)
+            target_id = row_dict.get('target_id')
+            if target_id in reactions_by_highlight:
+                reactions_by_highlight[target_id].append(row_dict)
+
+    # Reakciók és reakciószám beállítása a kiemelésekhez
     for highlight in highlights:
-        highlight['reactions'] = get_reactions_for_target('highlight', highlight['id'])
-        highlight['reaction_count'] = len(highlight['reactions'])
+        hid = highlight['id']
+        highlight_reactions = reactions_by_highlight.get(hid, [])
+        highlight['reactions'] = highlight_reactions
+        highlight['reaction_count'] = len(highlight_reactions)
     
+    conn.close()
     return highlights
 
 def delete_highlight(highlight_id, user_id):
