@@ -900,9 +900,14 @@ async function toggleReaction(targetType, targetId, button) {
             }
             
             countSpan.textContent = data.count > 0 ? data.count : '';
+        } else {
+            // Backend válasz, de a művelet nem sikerült – jelezzük a felhasználónak
+            alert('Nem sikerült elmenteni a reakciót. Kérjük, próbáld újra később.');
         }
     } catch (error) {
         console.error('Hiba a reakció mentésekor:', error);
+        // Hálózati vagy váratlan hiba – jelezzük a felhasználónak
+        alert('Hiba történt a reakció mentésekor. Kérjük, ellenőrizd az internetkapcsolatot, és próbáld újra.');
     }
 }
 
