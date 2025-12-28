@@ -48,18 +48,36 @@
                                     <i class="bi bi-highlighter"></i> Kiemelés
                                 </span>
                             {% endif %}
+                            {% if note.is_private %}
+                                <span class="badge bg-secondary me-2">
+                                    <i class="bi bi-lock-fill"></i> Privát
+                                </span>
+                            {% endif %}
                             <a href="{{ url_for('bible.daily', date_str=note.date) }}" class="text-decoration-none">
                                 <i class="bi bi-calendar-event"></i> {{ note.date }}
                             </a>
                         </div>
-                        <small class="text-muted">
-                            <i class="bi bi-clock"></i>
-                            {% if note.created_at is string %}
-                                {{ note.created_at[:16].replace('T', ' ') if 'T' in note.created_at else note.created_at[:16] }}
-                            {% else %}
-                                {{ note.created_at.strftime('%Y-%m-%d %H:%M') }}
+                        <div class="d-flex align-items-center gap-2">
+                            <!-- Reakciók és válaszok száma -->
+                            {% if note.reaction_count and note.reaction_count > 0 %}
+                            <span class="badge bg-danger-subtle text-danger" title="Reakciók">
+                                <i class="bi bi-heart-fill"></i> {{ note.reaction_count }}
+                            </span>
                             {% endif %}
-                        </small>
+                            {% if note.type == 'comment' and note.reply_count and note.reply_count > 0 %}
+                            <span class="badge bg-info-subtle text-info" title="Válaszok">
+                                <i class="bi bi-chat-left"></i> {{ note.reply_count }}
+                            </span>
+                            {% endif %}
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i>
+                                {% if note.created_at is string %}
+                                    {{ note.created_at[:16].replace('T', ' ') if 'T' in note.created_at else note.created_at[:16] }}
+                                {% else %}
+                                    {{ note.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% endif %}
+                            </small>
+                        </div>
                     </div>
                     
                     {% if note.type == 'comment' %}

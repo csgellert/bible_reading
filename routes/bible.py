@@ -10,7 +10,11 @@ from models.database import (
     mark_day_as_read, unmark_day_as_read, get_reading_log,
     get_all_users, get_all_reading_stats, get_readers_for_date,
     get_user_comments, get_user_highlights, get_user_notes_combined,
-    get_plan_by_id
+    get_plan_by_id,
+    add_reaction, remove_reaction, has_user_reacted,
+    add_comment_reply, get_replies_for_comment, delete_comment_reply,
+    update_comment_privacy, update_highlight_privacy,
+    get_reactions_for_target
 )
 from services.bible_api import fetch_verses_from_api, format_verses_html, get_available_translations
 
@@ -138,9 +142,16 @@ def daily(date_str=None):
         # Rendezés order szerint
         readings_list.sort(key=lambda x: x.get('order', 99))
     
-    # Kommentek és kiemelések
-    comments = get_comments_for_date(date_str, plan_id)
-    highlights = get_highlights_for_date(date_str, plan_id)
+    # Kommentek és kiemelések (privát szűréssel)
+    current_user_id = session.get('user_id')
+    comments = get_comments_for_date(date_str, plan_id, current_user_id)
+    highlights = get_highlights_for_date(date_str, plan_id, current_user_id)
+    
+    # Hozzáadjuk, hogy az aktuális user reagált-e már
+    for comment in comments:
+        comment['user_reacted'] = has_user_reacted(current_user_id, 'comment', comment['id'])
+    for highlight in highlights:
+        highlight['user_reacted'] = has_user_reacted(current_user_id, 'highlight', highlight['id'])
     
     # Olvasási napló
     user_reading_log = get_reading_log(session['user_id'], plan_id)
@@ -412,6 +423,9 @@ def my_notes():
         # Átalakítjuk a comments formátumot az egységes megjelenítéshez
         notes = []
         for note in raw_notes:
+            # Reakciók és válaszok lekérése
+            reactions = get_reactions_for_target('comment', note['id'])
+            replies = get_replies_for_comment(note['id'])
             notes.append({
                 'type': 'comment',
                 'id': note['id'],
@@ -420,13 +434,18 @@ def my_notes():
                 'text': note['content'],
                 'comment_type': note.get('comment_type'),
                 'color': None,
-                'created_at': note['created_at']
+                'created_at': note['created_at'],
+                'is_private': note.get('is_private', False),
+                'reaction_count': len(reactions),
+                'reply_count': len(replies)
             })
     elif view_type == 'highlights':
         raw_notes = get_user_highlights(user_id, plan_id)
         # Átalakítjuk a highlights formátumot
         notes = []
         for note in raw_notes:
+            # Reakciók lekérése
+            reactions = get_reactions_for_target('highlight', note['id'])
             notes.append({
                 'type': 'highlight',
                 'id': note['id'],
@@ -435,10 +454,24 @@ def my_notes():
                 'text': note['text'],
                 'comment_type': None,
                 'color': note.get('color', 'yellow'),
-                'created_at': note['created_at']
+                'created_at': note['created_at'],
+                'is_private': note.get('is_private', False),
+                'reaction_count': len(reactions)
             })
     else:
-        notes = get_user_notes_combined(user_id, plan_id)
+        raw_notes = get_user_notes_combined(user_id, plan_id)
+        # Reakciók és válaszok hozzáadása a kombinált jegyzetekhez
+        notes = []
+        for note in raw_notes:
+            reactions = get_reactions_for_target(note['type'], note['id'])
+            note_data = dict(note)
+            note_data['reaction_count'] = len(reactions)
+            if note['type'] == 'comment':
+                replies = get_replies_for_comment(note['id'])
+                note_data['reply_count'] = len(replies)
+            else:
+                note_data['reply_count'] = 0
+            notes.append(note_data)
     
     # Statisztikák
     total_comments = len(get_user_comments(user_id, plan_id))
@@ -450,3 +483,110 @@ def my_notes():
                          total_comments=total_comments,
                          total_highlights=total_highlights,
                          username=session.get('username'))
+
+
+# ==========================================
+# Reakció API végpontok
+# ==========================================
+
+@bible_bp.route('/api/reaction', methods=['POST'])
+@login_required
+def api_toggle_reaction():
+    """Reakció hozzáadása/eltávolítása (toggle)"""
+    data = request.get_json()
+    target_type = data.get('target_type')  # 'comment' vagy 'highlight'
+    target_id = data.get('target_id')
+    user_id = session.get('user_id')
+    
+    if not target_type or not target_id:
+        return jsonify({'success': False, 'error': 'Hiányzó paraméterek'}), 400
+    if target_type not in ('comment', 'highlight'):
+        return jsonify({'success': False, 'error': 'Érvénytelen target_type'}), 400
+    
+    # Ellenőrizzük, hogy már reagált-e
+    if has_user_reacted(user_id, target_type, target_id):
+        # Eltávolítjuk a reakciót
+        count = remove_reaction(user_id, target_type, target_id)
+        return jsonify({'success': True, 'action': 'removed', 'count': count})
+    else:
+        # Hozzáadjuk a reakciót
+        result = add_reaction(user_id, target_type, target_id)
+        if result['success']:
+            return jsonify({'success': True, 'action': 'added', 'count': result['count']})
+        else:
+            return jsonify({'success': False, 'error': result['error']}), 400
+
+
+# ==========================================
+# Válasz komment API végpontok
+# ==========================================
+
+@bible_bp.route('/api/comment/<int:comment_id>/reply', methods=['POST'])
+@login_required
+def api_add_reply(comment_id):
+    """Válasz hozzáadása egy kommenthez"""
+    data = request.get_json()
+    content = data.get('content', '').strip()
+    user_id = session.get('user_id')
+    username = session.get('username')
+    
+    if not content:
+        return jsonify({'success': False, 'error': 'A válasz nem lehet üres'}), 400
+    
+    reply_id = add_comment_reply(user_id, comment_id, content)
+    
+    return jsonify({
+        'success': True,
+        'id': reply_id,
+        'user_name': username,
+        'content': content
+    })
+
+
+@bible_bp.route('/api/reply/<int:reply_id>', methods=['DELETE'])
+@login_required
+def api_delete_reply(reply_id):
+    """Válasz törlése"""
+    user_id = session.get('user_id')
+    deleted = delete_comment_reply(reply_id, user_id)
+    
+    if deleted:
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'error': 'Nem sikerült törölni'}), 400
+
+
+# ==========================================
+# Privát beállítás API végpontok
+# ==========================================
+
+@bible_bp.route('/api/comment/<int:comment_id>/privacy', methods=['PUT'])
+@login_required
+def api_update_comment_privacy(comment_id):
+    """Komment privát státuszának módosítása"""
+    data = request.get_json()
+    is_private = data.get('is_private', False)
+    user_id = session.get('user_id')
+    
+    updated = update_comment_privacy(comment_id, user_id, is_private)
+    
+    if updated:
+        return jsonify({'success': True, 'is_private': is_private})
+    else:
+        return jsonify({'success': False, 'error': 'Nem sikerült módosítani'}), 400
+
+
+@bible_bp.route('/api/highlight/<int:highlight_id>/privacy', methods=['PUT'])
+@login_required
+def api_update_highlight_privacy(highlight_id):
+    """Kiemelés privát státuszának módosítása"""
+    data = request.get_json()
+    is_private = data.get('is_private', False)
+    user_id = session.get('user_id')
+    
+    updated = update_highlight_privacy(highlight_id, user_id, is_private)
+    
+    if updated:
+        return jsonify({'success': True, 'is_private': is_private})
+    else:
+        return jsonify({'success': False, 'error': 'Nem sikerült módosítani'}), 400

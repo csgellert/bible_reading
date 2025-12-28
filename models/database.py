@@ -128,6 +128,43 @@ def init_db():
                 UNIQUE(user_id, plan_id, date)
             )
         ''')
+        
+        # Reakciók tábla (like/szívecske)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS reactions (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                target_type TEXT NOT NULL,
+                target_id INTEGER NOT NULL,
+                reaction_type TEXT DEFAULT 'heart',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id),
+                UNIQUE(user_id, target_type, target_id)
+            )
+        ''')
+        
+        # Válasz kommentek tábla
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS comment_replies (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                parent_comment_id INTEGER NOT NULL,
+                content TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id),
+                FOREIGN KEY (parent_comment_id) REFERENCES comments (id) ON DELETE CASCADE
+            )
+        ''')
+        
+        # is_private mező hozzáadása a comments és highlights táblákhoz (ha nem létezik)
+        try:
+            cursor.execute('ALTER TABLE comments ADD COLUMN is_private BOOLEAN DEFAULT FALSE')
+        except:
+            pass
+        try:
+            cursor.execute('ALTER TABLE highlights ADD COLUMN is_private BOOLEAN DEFAULT FALSE')
+        except:
+            pass
     else:
         # SQLite szintaxis
         cursor.execute('''
@@ -194,6 +231,43 @@ def init_db():
                 UNIQUE(user_id, plan_id, date)
             )
         ''')
+        
+        # Reakciók tábla (like/szívecske)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS reactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                target_type TEXT NOT NULL,
+                target_id INTEGER NOT NULL,
+                reaction_type TEXT DEFAULT 'heart',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id),
+                UNIQUE(user_id, target_type, target_id)
+            )
+        ''')
+        
+        # Válasz kommentek tábla
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS comment_replies (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                parent_comment_id INTEGER NOT NULL,
+                content TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id),
+                FOREIGN KEY (parent_comment_id) REFERENCES comments (id) ON DELETE CASCADE
+            )
+        ''')
+        
+        # is_private mező hozzáadása a comments és highlights táblákhoz (ha nem létezik)
+        try:
+            cursor.execute('ALTER TABLE comments ADD COLUMN is_private INTEGER DEFAULT 0')
+        except:
+            pass
+        try:
+            cursor.execute('ALTER TABLE highlights ADD COLUMN is_private INTEGER DEFAULT 0')
+        except:
+            pass
     
     conn.commit()
     conn.close()
@@ -438,20 +512,33 @@ def add_comment(user_id, plan_id, date, content, verse_ref=None, comment_type='c
     conn.close()
     return comment_id
 
-def get_comments_for_date(date, plan_id):
-    """Adott nap kommentjeinek lekérése egy adott tervből"""
+def get_comments_for_date(date, plan_id, current_user_id=None):
+    """Adott nap kommentjeinek lekérése egy adott tervből (privát csak a tulajdonosnak látható)"""
     conn = get_db_connection()
     cursor = get_cursor(conn)
     p = placeholder()
+    
+    if USE_POSTGRES:
+        private_check = f"(c.is_private = FALSE OR c.is_private IS NULL OR c.user_id = {p})"
+    else:
+        private_check = f"(c.is_private = 0 OR c.is_private IS NULL OR c.user_id = {p})"
+    
     cursor.execute(f'''
         SELECT c.*, u.name as user_name
         FROM comments c
         JOIN users u ON c.user_id = u.id
-        WHERE c.date = {p} AND c.plan_id = {p}
+        WHERE c.date = {p} AND c.plan_id = {p} AND {private_check}
         ORDER BY c.created_at DESC
-    ''', (date, plan_id))
+    ''', (date, plan_id, current_user_id or 0))
     comments = [dict(row) for row in cursor.fetchall()]
     conn.close()
+    
+    # Reakciók és válaszok hozzáadása minden kommenthez
+    for comment in comments:
+        comment['reactions'] = get_reactions_for_target('comment', comment['id'])
+        comment['reaction_count'] = len(comment['reactions'])
+        comment['replies'] = get_replies_for_comment(comment['id'])
+    
     return comments
 
 def delete_comment(comment_id, user_id):
@@ -505,19 +592,56 @@ def add_highlight(user_id, plan_id, date, verse_ref, text, color='yellow'):
     conn.close()
     return highlight_id
 
-def get_highlights_for_date(date, plan_id):
-    """Adott nap kiemelései egy adott tervből"""
+def get_highlights_for_date(date, plan_id, current_user_id=None):
+    """Adott nap kiemelései egy adott tervből (privát csak a tulajdonosnak látható)"""
     conn = get_db_connection()
     cursor = get_cursor(conn)
     p = placeholder()
+    
+    if USE_POSTGRES:
+        private_check = f"(h.is_private = FALSE OR h.is_private IS NULL OR h.user_id = {p})"
+    else:
+        private_check = f"(h.is_private = 0 OR h.is_private IS NULL OR h.user_id = {p})"
+    
     cursor.execute(f'''
         SELECT h.*, u.name as user_name
         FROM highlights h
         JOIN users u ON h.user_id = u.id
-        WHERE h.date = {p} AND h.plan_id = {p}
+        WHERE h.date = {p} AND h.plan_id = {p} AND {private_check}
         ORDER BY h.created_at DESC
-    ''', (date, plan_id))
+    ''', (date, plan_id, current_user_id or 0))
     highlights = [dict(row) for row in cursor.fetchall()]
+    
+    # Reakciók hozzáadása minden kiemeléshez (N+1 lekérdezés elkerülése érdekében batch-ben töltjük)
+    highlight_ids = [h['id'] for h in highlights]
+    reactions_by_highlight = {hid: [] for hid in highlight_ids}
+
+    if highlight_ids:
+        # Dinamikus IN lista a highlight azonosítókhoz
+        in_placeholders = ', '.join([p] * len(highlight_ids))
+        cursor.execute(
+            f'''
+            SELECT *
+            FROM reactions
+            WHERE target_type = {p}
+              AND target_id IN ({in_placeholders})
+            ''',
+            tuple(['highlight'] + highlight_ids),
+        )
+
+        for row in cursor.fetchall():
+            row_dict = dict(row)
+            target_id = row_dict.get('target_id')
+            if target_id in reactions_by_highlight:
+                reactions_by_highlight[target_id].append(row_dict)
+
+    # Reakciók és reakciószám beállítása a kiemelésekhez
+    for highlight in highlights:
+        hid = highlight['id']
+        highlight_reactions = reactions_by_highlight.get(hid, [])
+        highlight['reactions'] = highlight_reactions
+        highlight['reaction_count'] = len(highlight_reactions)
+    
     conn.close()
     return highlights
 
@@ -699,3 +823,198 @@ def get_user_notes_combined(user_id, plan_id, limit=None):
     notes = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return notes
+
+
+# ==========================================
+# Reakciók (like/szívecske) műveletek
+# ==========================================
+
+def add_reaction(user_id, target_type, target_id, reaction_type='heart'):
+    """Reakció hozzáadása"""
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+    p = placeholder()
+    
+    try:
+        cursor.execute(f'''
+            INSERT INTO reactions (user_id, target_type, target_id, reaction_type)
+            VALUES ({p}, {p}, {p}, {p})
+        ''', (user_id, target_type, target_id, reaction_type))
+        conn.commit()
+        
+        # Visszaadjuk az új reakciók számát
+        cursor.execute(f'''
+            SELECT COUNT(*) as count FROM reactions
+            WHERE target_type = {p} AND target_id = {p}
+        ''', (target_type, target_id))
+        result = cursor.fetchone()
+        count = dict(result)['count'] if result else 0
+        conn.close()
+        return {'success': True, 'count': count}
+    except Exception as e:
+        conn.close()
+        return {'success': False, 'error': str(e)}
+
+
+def remove_reaction(user_id, target_type, target_id):
+    """Reakció eltávolítása"""
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+    p = placeholder()
+    
+    cursor.execute(f'''
+        DELETE FROM reactions
+        WHERE user_id = {p} AND target_type = {p} AND target_id = {p}
+    ''', (user_id, target_type, target_id))
+    conn.commit()
+    
+    # Visszaadjuk az új reakciók számát
+    cursor.execute(f'''
+        SELECT COUNT(*) as count FROM reactions
+        WHERE target_type = {p} AND target_id = {p}
+    ''', (target_type, target_id))
+    result = cursor.fetchone()
+    count = dict(result)['count'] if result else 0
+    conn.close()
+    return count
+
+
+def get_reactions_for_target(target_type, target_id):
+    """Reakciók lekérése egy adott célhoz"""
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+    p = placeholder()
+    
+    cursor.execute(f'''
+        SELECT r.*, u.name as user_name
+        FROM reactions r
+        JOIN users u ON r.user_id = u.id
+        WHERE r.target_type = {p} AND r.target_id = {p}
+    ''', (target_type, target_id))
+    reactions = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return reactions
+
+
+def has_user_reacted(user_id, target_type, target_id):
+    """Ellenőrzi, hogy a felhasználó reagált-e már"""
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+    p = placeholder()
+    
+    cursor.execute(f'''
+        SELECT id FROM reactions
+        WHERE user_id = {p} AND target_type = {p} AND target_id = {p}
+    ''', (user_id, target_type, target_id))
+    result = cursor.fetchone()
+    conn.close()
+    return result is not None
+
+
+# ==========================================
+# Válasz kommentek műveletek
+# ==========================================
+
+def add_comment_reply(user_id, parent_comment_id, content):
+    """Válasz hozzáadása egy kommenthez"""
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+    p = placeholder()
+    
+    if USE_POSTGRES:
+        cursor.execute(f'''
+            INSERT INTO comment_replies (user_id, parent_comment_id, content)
+            VALUES ({p}, {p}, {p})
+            RETURNING id
+        ''', (user_id, parent_comment_id, content))
+        reply_id = cursor.fetchone()['id']
+    else:
+        cursor.execute(f'''
+            INSERT INTO comment_replies (user_id, parent_comment_id, content)
+            VALUES ({p}, {p}, {p})
+        ''', (user_id, parent_comment_id, content))
+        reply_id = cursor.lastrowid
+    
+    conn.commit()
+    conn.close()
+    return reply_id
+
+
+def get_replies_for_comment(parent_comment_id):
+    """Válaszok lekérése egy kommenthez"""
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+    p = placeholder()
+    
+    cursor.execute(f'''
+        SELECT r.*, u.name as user_name
+        FROM comment_replies r
+        JOIN users u ON r.user_id = u.id
+        WHERE r.parent_comment_id = {p}
+        ORDER BY r.created_at ASC
+    ''', (parent_comment_id,))
+    replies = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return replies
+
+
+def delete_comment_reply(reply_id, user_id):
+    """Válasz törlése (csak a saját válaszok)"""
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+    p = placeholder()
+    
+    cursor.execute(f'''
+        DELETE FROM comment_replies
+        WHERE id = {p} AND user_id = {p}
+    ''', (reply_id, user_id))
+    conn.commit()
+    deleted = cursor.rowcount > 0
+    conn.close()
+    return deleted
+
+
+# ==========================================
+# Privát jegyzet/kiemelés műveletek
+# ==========================================
+
+def update_comment_privacy(comment_id, user_id, is_private):
+    """Komment privát státuszának módosítása"""
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+    p = placeholder()
+    
+    private_val = 1 if is_private else 0
+    if USE_POSTGRES:
+        private_val = is_private
+    
+    cursor.execute(f'''
+        UPDATE comments
+        SET is_private = {p}
+        WHERE id = {p} AND user_id = {p}
+    ''', (private_val, comment_id, user_id))
+    conn.commit()
+    updated = cursor.rowcount > 0
+    conn.close()
+    return updated
+
+
+def update_highlight_privacy(highlight_id, user_id, is_private):
+    """Kiemelés privát státuszának módosítása"""
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+    p = placeholder()
+    
+    private_val = 1 if is_private else 0
+    if USE_POSTGRES:
+        private_val = is_private
+    
+    cursor.execute(f'''
+        UPDATE highlights
+        SET is_private = {p}
+        WHERE id = {p} AND user_id = {p}
+    ''', (private_val, highlight_id, user_id))
+    conn.commit()
+    updated = cursor.rowcount > 0
+    conn.close()
+    return updated
