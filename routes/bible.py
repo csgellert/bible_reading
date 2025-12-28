@@ -500,6 +500,8 @@ def api_toggle_reaction():
     
     if not target_type or not target_id:
         return jsonify({'success': False, 'error': 'Hiányzó paraméterek'}), 400
+    if target_type not in ('comment', 'highlight'):
+        return jsonify({'success': False, 'error': 'Érvénytelen target_type'}), 400
     
     # Ellenőrizzük, hogy már reagált-e
     if has_user_reacted(user_id, target_type, target_id):
