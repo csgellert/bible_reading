@@ -1114,8 +1114,15 @@ async function deleteReply(replyId, button) {
                     repliesContainer.remove();
                 }
             }
+        } else {
+            // Sikertelen törlés esetén felhasználói visszajelzés
+            const message = data && data.message
+                ? data.message
+                : 'Nem sikerült törölni a választ. Kérlek, próbáld meg újra.';
+            alert(message);
         }
     } catch (error) {
         console.error('Hiba a válasz törlésekor:', error);
+        alert('Nem sikerült törölni a választ hálózati vagy szerver hiba miatt. Kérlek, próbáld meg később újra.');
     }
 }
