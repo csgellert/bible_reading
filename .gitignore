@@ -24,7 +24,7 @@ wheels/
 migrate_db.py
 READING_PLAN_FORMAT.md
 migrations/
-
+DEPLOY.md
 # Virtual Environment
 .venv/
 venv/
