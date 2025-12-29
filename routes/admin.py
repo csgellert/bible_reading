@@ -8,6 +8,8 @@ from models.database import (
 )
 from config import Config
 import os
+import json
+import re
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -193,10 +195,28 @@ def delete_plan_view(plan_id):
 # Olvasási terv tartalom szerkesztése
 # ===========================================
 
-import json
+def validate_plan_file(plan_file):
+    """
+    Validate plan_file to prevent path traversal attacks.
+    Only allows filenames with alphanumeric characters, underscores, hyphens, and .json extension.
+    """
+    if not plan_file:
+        raise ValueError("Plan file name cannot be empty")
+    
+    # Check for path traversal sequences
+    if '..' in plan_file or '/' in plan_file or '\\' in plan_file:
+        raise ValueError("Invalid plan file name: path traversal characters detected")
+    
+    # Only allow safe characters: alphanumeric, underscore, hyphen, and .json extension
+    # Filename must start with alphanumeric character to avoid command-line option confusion
+    if not re.match(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*\.json$', plan_file):
+        raise ValueError("Invalid plan file name: must start with alphanumeric character and contain only alphanumeric characters, underscores, hyphens, and .json extension")
+    
+    return True
 
 def load_plan_file(plan_file):
     """Olvasási terv fájl betöltése"""
+    validate_plan_file(plan_file)
     plan_path = os.path.join(os.path.dirname(Config.READING_PLAN_PATH), plan_file)
     if os.path.exists(plan_path):
         with open(plan_path, 'r', encoding='utf-8') as f:
@@ -205,6 +225,7 @@ def load_plan_file(plan_file):
 
 def save_plan_file(plan_file, data):
     """Olvasási terv fájl mentése"""
+    validate_plan_file(plan_file)
     plan_path = os.path.join(os.path.dirname(Config.READING_PLAN_PATH), plan_file)
     with open(plan_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
