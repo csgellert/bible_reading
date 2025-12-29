@@ -195,9 +195,42 @@ def delete_plan_view(plan_id):
 
 import json
 
+def validate_plan_file(plan_file):
+    """
+    Validates that plan_file is safe and doesn't contain path traversal sequences.
+    Returns the validated filename or raises ValueError if invalid.
+    """
+    if not plan_file:
+        raise ValueError("Plan file cannot be empty")
+    
+    # Check for path traversal sequences and path separators
+    if '..' in plan_file or '/' in plan_file or '\\' in plan_file:
+        raise ValueError("Plan file cannot contain path traversal sequences")
+    
+    # Only allow alphanumeric characters, dots, underscores, and hyphens
+    import re
+    if not re.match(r'^[a-zA-Z0-9_\-\.]+$', plan_file):
+        raise ValueError("Plan file contains invalid characters")
+    
+    # Must be a JSON file
+    if not plan_file.endswith('.json'):
+        raise ValueError("Plan file must be a JSON file")
+    
+    # Verify the resolved path is within the expected directory
+    base_dir = os.path.dirname(Config.READING_PLAN_PATH)
+    plan_path = os.path.join(base_dir, plan_file)
+    resolved_path = os.path.abspath(plan_path)
+    resolved_base = os.path.abspath(base_dir)
+    
+    if not resolved_path.startswith(resolved_base + os.sep):
+        raise ValueError("Plan file path is outside the allowed directory")
+    
+    return plan_file
+
 def load_plan_file(plan_file):
     """Olvasási terv fájl betöltése"""
-    plan_path = os.path.join(os.path.dirname(Config.READING_PLAN_PATH), plan_file)
+    validated_file = validate_plan_file(plan_file)
+    plan_path = os.path.join(os.path.dirname(Config.READING_PLAN_PATH), validated_file)
     if os.path.exists(plan_path):
         with open(plan_path, 'r', encoding='utf-8') as f:
             return json.load(f)
@@ -205,7 +238,8 @@ def load_plan_file(plan_file):
 
 def save_plan_file(plan_file, data):
     """Olvasási terv fájl mentése"""
-    plan_path = os.path.join(os.path.dirname(Config.READING_PLAN_PATH), plan_file)
+    validated_file = validate_plan_file(plan_file)
+    plan_path = os.path.join(os.path.dirname(Config.READING_PLAN_PATH), validated_file)
     with open(plan_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
@@ -219,7 +253,11 @@ def edit_readings(plan_id):
         flash('Terv nem található!', 'error')
         return redirect(url_for('admin.plans'))
     
-    plan_data = load_plan_file(plan['plan_file'])
+    try:
+        plan_data = load_plan_file(plan['plan_file'])
+    except ValueError as e:
+        flash(f'Érvénytelen terv fájl: {str(e)}', 'error')
+        return redirect(url_for('admin.plans'))
     
     # Rendezés: ha számozott (1, 2, 3...), akkor szám szerint, egyébként string szerint
     sorted_keys = sorted(
@@ -252,7 +290,11 @@ def edit_reading_day(plan_id, day):
         flash('Terv nem található!', 'error')
         return redirect(url_for('admin.plans'))
     
-    plan_data = load_plan_file(plan['plan_file'])
+    try:
+        plan_data = load_plan_file(plan['plan_file'])
+    except ValueError as e:
+        flash(f'Érvénytelen terv fájl: {str(e)}', 'error')
+        return redirect(url_for('admin.plans'))
     
     if request.method == 'POST':
         # Mentés
@@ -276,7 +318,11 @@ def edit_reading_day(plan_id, day):
         elif day in plan_data:
             del plan_data[day]
         
-        save_plan_file(plan['plan_file'], plan_data)
+        try:
+            save_plan_file(plan['plan_file'], plan_data)
+        except ValueError as e:
+            flash(f'Érvénytelen terv fájl: {str(e)}', 'error')
+            return redirect(url_for('admin.plans'))
         flash(f'{day}. nap mentve!', 'success')
         return redirect(url_for('admin.edit_readings', plan_id=plan_id))
     
@@ -298,7 +344,11 @@ def add_reading_day(plan_id):
         flash('Terv nem található!', 'error')
         return redirect(url_for('admin.plans'))
     
-    plan_data = load_plan_file(plan['plan_file'])
+    try:
+        plan_data = load_plan_file(plan['plan_file'])
+    except ValueError as e:
+        flash(f'Érvénytelen terv fájl: {str(e)}', 'error')
+        return redirect(url_for('admin.plans'))
     
     if request.method == 'POST':
         day = request.form.get('day', '').strip()
@@ -327,7 +377,11 @@ def add_reading_day(plan_id):
         
         if day_data:
             plan_data[day] = day_data
-            save_plan_file(plan['plan_file'], plan_data)
+            try:
+                save_plan_file(plan['plan_file'], plan_data)
+            except ValueError as e:
+                flash(f'Érvénytelen terv fájl: {str(e)}', 'error')
+                return redirect(url_for('admin.plans'))
             flash(f'{day}. nap hozzáadva!', 'success')
         else:
             flash('Legalább egy olvasmányt adj meg!', 'error')
@@ -357,11 +411,19 @@ def delete_reading_day(plan_id, day):
         flash('Terv nem található!', 'error')
         return redirect(url_for('admin.plans'))
     
-    plan_data = load_plan_file(plan['plan_file'])
+    try:
+        plan_data = load_plan_file(plan['plan_file'])
+    except ValueError as e:
+        flash(f'Érvénytelen terv fájl: {str(e)}', 'error')
+        return redirect(url_for('admin.plans'))
     
     if day in plan_data:
         del plan_data[day]
-        save_plan_file(plan['plan_file'], plan_data)
+        try:
+            save_plan_file(plan['plan_file'], plan_data)
+        except ValueError as e:
+            flash(f'Érvénytelen terv fájl: {str(e)}', 'error')
+            return redirect(url_for('admin.plans'))
         flash(f'{day}. nap törölve!', 'success')
     else:
         flash('A nap nem található!', 'error')
