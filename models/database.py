@@ -76,11 +76,13 @@ def init_db():
             )
         ''')
         
-        # start_date mező hozzáadása ha nem létezik
+        # start_date mező hozzáadása ha nem létezik (PostgreSQL-ben külön kell kezelni)
         try:
-            cursor.execute('ALTER TABLE reading_plans ADD COLUMN start_date DATE DEFAULT CURRENT_DATE')
-        except:
-            pass
+            cursor.execute('''
+                ALTER TABLE reading_plans ADD COLUMN IF NOT EXISTS start_date DATE DEFAULT CURRENT_DATE
+            ''')
+        except Exception:
+            conn.rollback()
         
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
@@ -165,13 +167,13 @@ def init_db():
         
         # is_private mező hozzáadása a comments és highlights táblákhoz (ha nem létezik)
         try:
-            cursor.execute('ALTER TABLE comments ADD COLUMN is_private BOOLEAN DEFAULT FALSE')
-        except:
-            pass
+            cursor.execute('ALTER TABLE comments ADD COLUMN IF NOT EXISTS is_private BOOLEAN DEFAULT FALSE')
+        except Exception:
+            conn.rollback()
         try:
-            cursor.execute('ALTER TABLE highlights ADD COLUMN is_private BOOLEAN DEFAULT FALSE')
-        except:
-            pass
+            cursor.execute('ALTER TABLE highlights ADD COLUMN IF NOT EXISTS is_private BOOLEAN DEFAULT FALSE')
+        except Exception:
+            conn.rollback()
     else:
         # SQLite szintaxis
         cursor.execute('''
