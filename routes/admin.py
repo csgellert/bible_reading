@@ -222,10 +222,10 @@ def edit_readings(plan_id):
     plan_data = load_plan_file(plan['plan_file'])
     
     # Rendezés: ha számozott (1, 2, 3...), akkor szám szerint, egyébként string szerint
-    try:
-        sorted_keys = sorted(plan_data.keys(), key=lambda x: int(x) if x.isdigit() else x)
-    except:
-        sorted_keys = sorted(plan_data.keys())
+    sorted_keys = sorted(
+        plan_data.keys(),
+        key=lambda x: (0, int(str(x))) if str(x).isdigit() else (1, str(x))
+    )
     
     readings = []
     for key in sorted_keys:
