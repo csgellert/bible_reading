@@ -390,15 +390,24 @@
             <div class="card-body">
                 <form id="jumpToDateForm">
                     <div class="mb-2">
+                        {% if date_str and date_str|length >= 10 and date_str[:4].isdigit() %}
+                            {% set current_year = date_str[:4]|int %}
+                        {% else %}
+                            {% set current_year = 2025 %}
+                        {% endif %}
                         <select class="form-select form-select-sm" id="jumpYear">
-                            {% set current_year = date_str[:4]|int if date_str else 2025 %}
                             {% for y in range(current_year - 2, current_year + 3) %}
                             <option value="{{ y }}" {{ 'selected' if y == current_year else '' }}>{{ y }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    {% set current_month = date_str[5:7] if date_str else '01' %}
-                    {% set current_day = date_str[8:10] if date_str else '01' %}
+                    {% if date_str and date_str|length >= 10 %}
+                        {% set current_month = date_str[5:7] %}
+                        {% set current_day = date_str[8:10] %}
+                    {% else %}
+                        {% set current_month = '01' %}
+                        {% set current_day = '01' %}
+                    {% endif %}
                     <div class="input-group">
                         <select class="form-select" id="jumpMonth">
                             <option value="01" {{ 'selected' if current_month == '01' else '' }}>Január</option>
