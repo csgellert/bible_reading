@@ -1,9 +1,31 @@
 from flask import Flask
-from datetime import timedelta
+from datetime import timedelta, datetime
 import argparse
 import os
 from config import Config
 from models.database import init_db
+
+
+def format_datetime(value, format='%Y-%m-%d %H:%M'):
+    """Jinja2 filter dátumok formázásához (datetime és string támogatás)"""
+    if value is None:
+        return '-'
+    if isinstance(value, datetime):
+        return value.strftime(format)
+    if isinstance(value, str):
+        # Ha string, próbáljuk parse-olni
+        try:
+            dt = datetime.fromisoformat(value.replace('Z', '+00:00'))
+            return dt.strftime(format)
+        except:
+            # Ha nem sikerül, csak vágjuk le a megfelelő hosszra
+            if format == '%Y-%m-%d':
+                return value[:10] if len(value) >= 10 else value
+            elif format == '%Y-%m-%d %H:%M':
+                return value[:16].replace('T', ' ') if len(value) >= 16 else value
+            return value
+    return str(value)
+
 
 def create_app(bible_source=None, bible_translation=None):
     app = Flask(__name__)
@@ -11,6 +33,11 @@ def create_app(bible_source=None, bible_translation=None):
     # Konfiguráció betöltése
     app.config.from_object(Config)
     app.secret_key = Config.SECRET_KEY
+    
+    # Jinja2 filterek regisztrálása
+    app.jinja_env.filters['datetime'] = format_datetime
+    app.jinja_env.filters['date'] = lambda v: format_datetime(v, '%Y-%m-%d')
+    app.jinja_env.filters['datetime_short'] = lambda v: format_datetime(v, '%Y-%m-%d %H:%M')
     
     # Parancssori beállítások felülírása
     if bible_source:

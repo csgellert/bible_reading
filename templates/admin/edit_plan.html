@@ -87,7 +87,7 @@
                     <dd class="col-sm-8">{{ plan.start_date or 'Nincs beállítva' }}</dd>
                     
                     <dt class="col-sm-4">Létrehozva:</dt>
-                    <dd class="col-sm-8">{{ plan.created_at[:16] if plan.created_at else '-' }}</dd>
+                    <dd class="col-sm-8">{{ plan.created_at|datetime_short }}</dd>
                 </dl>
             </div>
         </div>
@@ -116,7 +116,7 @@
                             <tr>
                                 <td>
                                     <strong>{{ user.name }}</strong>
-                                    <br><small class="text-muted">{{ user.created_at[:10] if user.created_at else '' }}</small>
+                                    <br><small class="text-muted">{{ user.created_at|date }}</small>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge bg-success">{{ user.stats.days_read }}</span>
