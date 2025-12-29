@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from datetime import datetime
 
 # .env fájl betöltése
 load_dotenv()
@@ -26,6 +27,21 @@ class Config:
     
     # Olvasási terv JSON fájl
     READING_PLAN_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'reading_plan.json')
+    
+    # ==========================================
+    # Olvasási terv kezdő dátuma
+    # ==========================================
+    # Formátum: YYYY-MM-DD (pl. '2025-01-01')
+    # Ha nincs megadva, az aktuális év január 1-je
+    PLAN_START_DATE = os.environ.get('PLAN_START_DATE', f'{datetime.now().year}-01-01')
+    
+    @classmethod
+    def get_plan_start_date(cls):
+        """Visszaadja a terv kezdő dátumát datetime objektumként"""
+        try:
+            return datetime.strptime(cls.PLAN_START_DATE, '%Y-%m-%d').date()
+        except:
+            return datetime(datetime.now().year, 1, 1).date()
     
     # ==========================================
     # Biblia szöveg forrás beállítások

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, current_app
 from functools import wraps
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import json
 import os
 from config import Config
@@ -28,6 +28,47 @@ def login_required(f):
             return redirect(url_for('auth.login'))
         return f(*args, **kwargs)
     return decorated_function
+
+
+def get_plan_start_date(plan_id):
+    """Olvasási terv kezdő dátumának lekérése"""
+    plan = get_plan_by_id(plan_id)
+    if plan and plan.get('start_date'):
+        start_date = plan['start_date']
+        if isinstance(start_date, str):
+            try:
+                return datetime.strptime(start_date, '%Y-%m-%d').date()
+            except:
+                pass
+        elif isinstance(start_date, date):
+            return start_date
+    # Alapértelmezett: Config-ból
+    return Config.get_plan_start_date()
+
+
+def get_day_number(target_date, plan_id):
+    """Adott dátumhoz tartozó nap sorszámának kiszámítása"""
+    start_date = get_plan_start_date(plan_id)
+    if isinstance(target_date, str):
+        target_date = datetime.strptime(target_date, '%Y-%m-%d').date()
+    delta = target_date - start_date
+    return delta.days + 1  # 1-től kezdve számozunk
+
+
+def get_date_for_day(day_number, plan_id):
+    """Nap sorszámhoz tartozó dátum kiszámítása"""
+    start_date = get_plan_start_date(plan_id)
+    return start_date + timedelta(days=day_number - 1)
+
+
+def is_numbered_plan(reading_plan):
+    """Ellenőrzi, hogy a terv számozott napokkal működik-e (1, 2, 3...) vagy dátumokkal (MM-DD)"""
+    if not reading_plan:
+        return False
+    first_key = list(reading_plan.keys())[0]
+    # Ha az első kulcs csak számokból áll, akkor számozott terv
+    return first_key.isdigit()
+
 
 def load_reading_plan(plan_id=None):
     """Olvasási terv betöltése JSON-ból (terv alapján)"""
@@ -88,16 +129,59 @@ def index():
 @login_required
 def daily(date_str=None):
     """Napi olvasmány oldal"""
-    if date_str is None:
-        date_str = get_today_string()
-    
     plan_id = session.get('plan_id')
+    
+    # Ha nincs dátum megadva, mai napot használjuk
+    if date_str is None:
+        target_date = date.today()
+        date_str = target_date.strftime('%Y-%m-%d')
+    else:
+        # Dátum parse: támogatjuk YYYY-MM-DD és MM-DD formátumot is
+        try:
+            if len(date_str) == 10:  # YYYY-MM-DD
+                target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            else:  # MM-DD (régi kompatibilitás)
+                # Használjuk az aktuális évet vagy a terv kezdő évét
+                start_date = get_plan_start_date(plan_id)
+                month, day = map(int, date_str.split('-'))
+                target_date = date(start_date.year, month, day)
+                date_str = target_date.strftime('%Y-%m-%d')
+        except:
+            target_date = date.today()
+            date_str = target_date.strftime('%Y-%m-%d')
     
     # Olvasási terv betöltése
     reading_plan = load_reading_plan(plan_id)
     
-    # Mai szakaszok - átalakítás listává
-    daily_readings_raw = reading_plan.get(date_str, {})
+    # Ellenőrizzük, hogy számozott vagy dátum alapú terv
+    out_of_range = False  # Jelzi, ha a dátum a terven kívül esik
+    
+    if is_numbered_plan(reading_plan):
+        # Számozott terv: kiszámoljuk a nap sorszámát
+        day_number = get_day_number(target_date, plan_id)
+        plan_key = str(day_number)
+        
+        # Terv maximális napjának meghatározása
+        max_day = max(int(k) for k in reading_plan.keys()) if reading_plan else 366
+        
+        # Ha a nap sorszám kívül esik a terven, ne jelenítsünk meg olvasmányt
+        if day_number < 1:
+            out_of_range = True
+            flash('Ez a dátum a terv kezdete előtt van.', 'warning')
+        elif day_number > max_day:
+            out_of_range = True
+            flash('Ez a dátum a terv végén túl van.', 'warning')
+    else:
+        # Régi dátum alapú terv (MM-DD)
+        day_number = None
+        plan_key = target_date.strftime('%m-%d')
+    
+    # Ha a dátum a terven kívül esik, üres olvasmányokat jelenítünk meg
+    if out_of_range:
+        daily_readings_raw = {}
+    else:
+        # Mai szakaszok - átalakítás listává
+        daily_readings_raw = reading_plan.get(plan_key, {})
     
     # Szakasz típusok metaadatai
     section_types = {
@@ -161,25 +245,28 @@ def daily(date_str=None):
     readers = get_readers_for_date(date_str, plan_id)
     readers_count = len(readers)
     
-    # Előző és következő nap
-    try:
-        month, day = map(int, date_str.split('-'))
-        current_date = date(2025, month, day)
-        
-        # Előző nap
-        from datetime import timedelta
-        prev_date = current_date - timedelta(days=1)
-        next_date = current_date + timedelta(days=1)
-        
-        prev_str = prev_date.strftime('%m-%d')
-        next_str = next_date.strftime('%m-%d')
-    except:
-        prev_str = None
-        next_str = None
+    # Előző és következő nap (teljes dátummal)
+    prev_date = target_date - timedelta(days=1)
+    next_date = target_date + timedelta(days=1)
+    
+    prev_str = prev_date.strftime('%Y-%m-%d')
+    next_str = next_date.strftime('%Y-%m-%d')
+    today_str = date.today().strftime('%Y-%m-%d')
+    
+    # Dátum megjelenítés formázása
+    if out_of_range:
+        date_display = format_date_hungarian(target_date)
+    elif day_number:
+        # Számozott terv: megjelenítjük a nap számát és a dátumot is
+        date_display = f"{day_number}. nap ({format_date_hungarian(target_date)})"
+    else:
+        # Régi formátum: csak a dátum
+        date_display = get_date_string(target_date.strftime('%m-%d'))
     
     return render_template('daily.html',
                          date_str=date_str,
-                         date_display=get_date_string(date_str),
+                         day_number=day_number,
+                         date_display=date_display,
                          readings=readings_list,
                          comments=comments,
                          highlights=highlights,
@@ -188,8 +275,16 @@ def daily(date_str=None):
                          readers_count=readers_count,
                          prev_date=prev_str,
                          next_date=next_str,
-                         today=get_today_string(),
+                         today=today_str,
+                         out_of_range=out_of_range,
                          users=get_all_users(plan_id))
+
+
+def format_date_hungarian(d):
+    """Dátum formázása magyarul (pl. 2025. január 15.)"""
+    months = ['január', 'február', 'március', 'április', 'május', 'június',
+              'július', 'augusztus', 'szeptember', 'október', 'november', 'december']
+    return f"{d.year}. {months[d.month-1]} {d.day}."
 
 @bible_bp.route('/calendar')
 @login_required
@@ -200,36 +295,96 @@ def calendar():
     user_reading_log = get_reading_log(session['user_id'], plan_id)
     stats = get_all_reading_stats(plan_id)
     
-    # Hónapok létrehozása
-    months = []
-    month_names = ['Január', 'Február', 'Március', 'Április', 'Május', 'Június',
-                   'Július', 'Augusztus', 'Szeptember', 'Október', 'November', 'December']
-    days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    # Terv kezdő dátuma
+    start_date = get_plan_start_date(plan_id)
+    numbered_plan = is_numbered_plan(reading_plan)
+    total_days = len(reading_plan)
     
-    for m in range(12):
-        month_data = {
-            'name': month_names[m],
-            'days': []
-        }
-        for d in range(1, days_in_month[m] + 1):
-            date_str = f"{m+1:02d}-{d:02d}"
-            has_reading = date_str in reading_plan
-            is_read = date_str in user_reading_log
-            is_today = date_str == get_today_string()
+    if numbered_plan:
+        # Számozott terv: generáljuk a hónapokat a kezdő dátumtól
+        from calendar import monthrange
+        
+        # Számoljuk ki, hogy hány hónapot kell megjeleníteni
+        end_date = start_date + timedelta(days=total_days - 1)
+        
+        months = []
+        current_month_start = date(start_date.year, start_date.month, 1)
+        
+        month_names = ['Január', 'Február', 'Március', 'Április', 'Május', 'Június',
+                       'Július', 'Augusztus', 'Szeptember', 'Október', 'November', 'December']
+        
+        while current_month_start <= end_date:
+            days_in_current_month = monthrange(current_month_start.year, current_month_start.month)[1]
             
-            month_data['days'].append({
-                'day': d,
-                'date_str': date_str,
-                'has_reading': has_reading,
-                'is_read': is_read,
-                'is_today': is_today
-            })
-        months.append(month_data)
+            month_data = {
+                'name': f"{current_month_start.year}. {month_names[current_month_start.month - 1]}",
+                'days': []
+            }
+            
+            for d in range(1, days_in_current_month + 1):
+                current_date = date(current_month_start.year, current_month_start.month, d)
+                date_str = current_date.strftime('%Y-%m-%d')
+                
+                # Számoljuk ki a nap számát
+                day_num = get_day_number(current_date, plan_id)
+                
+                # Ellenőrizzük, hogy ez a nap a terv része-e
+                has_reading = 1 <= day_num <= total_days and str(day_num) in reading_plan
+                is_read = date_str in user_reading_log
+                is_today = current_date == date.today()
+                
+                month_data['days'].append({
+                    'day': d,
+                    'day_number': day_num if has_reading else None,
+                    'date_str': date_str,
+                    'has_reading': has_reading,
+                    'is_read': is_read,
+                    'is_today': is_today
+                })
+            
+            months.append(month_data)
+            
+            # Következő hónap
+            if current_month_start.month == 12:
+                current_month_start = date(current_month_start.year + 1, 1, 1)
+            else:
+                current_month_start = date(current_month_start.year, current_month_start.month + 1, 1)
+    else:
+        # Régi dátum alapú terv
+        months = []
+        month_names = ['Január', 'Február', 'Március', 'Április', 'Május', 'Június',
+                       'Július', 'Augusztus', 'Szeptember', 'Október', 'November', 'December']
+        days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        
+        for m in range(12):
+            month_data = {
+                'name': month_names[m],
+                'days': []
+            }
+            for d in range(1, days_in_month[m] + 1):
+                date_key = f"{m+1:02d}-{d:02d}"
+                current_date = date(start_date.year, m+1, d)
+                date_str = current_date.strftime('%Y-%m-%d')
+                has_reading = date_key in reading_plan
+                is_read = date_str in user_reading_log
+                is_today = current_date == date.today()
+                
+                month_data['days'].append({
+                    'day': d,
+                    'day_number': None,
+                    'date_str': date_str,
+                    'has_reading': has_reading,
+                    'is_read': is_read,
+                    'is_today': is_today
+                })
+            months.append(month_data)
     
     return render_template('calendar.html',
                          months=months,
                          stats=stats,
-                         total_read=len(user_reading_log))
+                         total_read=len(user_reading_log),
+                         start_date=start_date.strftime('%Y-%m-%d'),
+                         numbered_plan=numbered_plan)
 
 # API végpontok
 @bible_bp.route('/api/comment', methods=['POST'])

@@ -31,6 +31,13 @@
                         <small class="text-muted">HTML formázás támogatott (p, ul, li, strong, em, stb.)</small>
                     </div>
                     
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">Kezdő dátum</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" 
+                               value="{{ plan.start_date or '' }}">
+                        <small class="text-muted">A terv első napjának dátuma.</small>
+                    </div>
+                    
                     <hr>
                     
                     <div class="mb-3">
@@ -51,6 +58,19 @@
             </div>
         </div>
         
+        <!-- Olvasmányok szerkesztése gomb -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-book"></i> Olvasmányok</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Az olvasási tervben szereplő napi olvasmányok szerkesztése.</p>
+                <a href="{{ url_for('admin.edit_readings', plan_id=plan.id) }}" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Olvasmányok szerkesztése
+                </a>
+            </div>
+        </div>
+        
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0"><i class="bi bi-info-circle"></i> Technikai adatok</h5>
@@ -62,6 +82,9 @@
                     
                     <dt class="col-sm-4">Terv fájl:</dt>
                     <dd class="col-sm-8"><code>{{ plan.plan_file }}</code></dd>
+                    
+                    <dt class="col-sm-4">Kezdő dátum:</dt>
+                    <dd class="col-sm-8">{{ plan.start_date or 'Nincs beállítva' }}</dd>
                     
                     <dt class="col-sm-4">Létrehozva:</dt>
                     <dd class="col-sm-8">{{ plan.created_at[:16] if plan.created_at else '-' }}</dd>
