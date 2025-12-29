@@ -824,10 +824,11 @@ function setupJumpToDateForm() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
+        const year = document.getElementById('jumpYear').value;
         const month = document.getElementById('jumpMonth').value;
         const day = document.getElementById('jumpDay').value;
         
-        window.location.href = `/daily/${month}-${day}`;
+        window.location.href = `/daily/${year}-${month}-${day}`;
     });
 }
 

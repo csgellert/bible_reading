@@ -71,9 +71,16 @@ def init_db():
                 password_hash TEXT NOT NULL,
                 plan_file TEXT NOT NULL,
                 description TEXT,
+                start_date DATE DEFAULT CURRENT_DATE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        
+        # start_date mező hozzáadása ha nem létezik
+        try:
+            cursor.execute('ALTER TABLE reading_plans ADD COLUMN start_date DATE DEFAULT CURRENT_DATE')
+        except:
+            pass
         
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
@@ -174,9 +181,16 @@ def init_db():
                 password_hash TEXT NOT NULL,
                 plan_file TEXT NOT NULL,
                 description TEXT,
+                start_date TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        
+        # start_date mező hozzáadása ha nem létezik
+        try:
+            cursor.execute('ALTER TABLE reading_plans ADD COLUMN start_date TEXT')
+        except:
+            pass
         
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
@@ -335,29 +349,43 @@ def get_all_plans():
     return plans
 
 
-def create_plan(name, password, plan_file, description=''):
+def create_plan(name, password, plan_file, description='', start_date=None):
     """Új olvasási terv létrehozása"""
     conn = get_db_connection()
     cursor = get_cursor(conn)
     password_hash = generate_password_hash(password)
     p = placeholder()
     
+    # Alapértelmezett start_date az aktuális nap
+    if start_date is None:
+        start_date = datetime.now().strftime('%Y-%m-%d')
+    
     if USE_POSTGRES:
         cursor.execute(f'''
-            INSERT INTO reading_plans (name, password_hash, plan_file, description)
-            VALUES ({p}, {p}, {p}, {p}) RETURNING id
-        ''', (name, password_hash, plan_file, description))
+            INSERT INTO reading_plans (name, password_hash, plan_file, description, start_date)
+            VALUES ({p}, {p}, {p}, {p}, {p}) RETURNING id
+        ''', (name, password_hash, plan_file, description, start_date))
         plan_id = cursor.fetchone()['id']
     else:
         cursor.execute(f'''
-            INSERT INTO reading_plans (name, password_hash, plan_file, description)
-            VALUES ({p}, {p}, {p}, {p})
-        ''', (name, password_hash, plan_file, description))
+            INSERT INTO reading_plans (name, password_hash, plan_file, description, start_date)
+            VALUES ({p}, {p}, {p}, {p}, {p})
+        ''', (name, password_hash, plan_file, description, start_date))
         plan_id = cursor.lastrowid
     
     conn.commit()
     conn.close()
     return plan_id
+
+
+def update_plan_start_date(plan_id, start_date):
+    """Olvasási terv kezdő dátumának módosítása"""
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+    p = placeholder()
+    cursor.execute(f'UPDATE reading_plans SET start_date = {p} WHERE id = {p}', (start_date, plan_id))
+    conn.commit()
+    conn.close()
 
 
 def update_plan_password(plan_id, new_password):

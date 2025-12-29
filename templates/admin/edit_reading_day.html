@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{{ day }}. nap szerkesztése - {{ plan.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.plans') }}">Admin</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.edit_plan', plan_id=plan.id) }}">{{ plan.name }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.edit_readings', plan_id=plan.id) }}">Olvasmányok</a></li>
+                <li class="breadcrumb-item active">{{ day }}. nap</li>
+            </ol>
+        </nav>
+        <h2><i class="bi bi-pencil"></i> {{ day }}. nap szerkesztése</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Olvasmányok</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="ot" class="form-label">
+                            <i class="bi bi-bookmark text-success"></i> Ószövetség
+                        </label>
+                        <input type="text" class="form-control" id="ot" name="ot" 
+                               value="{{ day_data.ot or '' }}"
+                               placeholder="pl. 1Mózes 1-3">
+                        <div class="form-text">Ószövetségi olvasmány (könyv és fejezetek)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="nt" class="form-label">
+                            <i class="bi bi-bookmark-fill text-primary"></i> Újszövetség
+                        </label>
+                        <input type="text" class="form-control" id="nt" name="nt" 
+                               value="{{ day_data.nt or '' }}"
+                               placeholder="pl. Máté 1">
+                        <div class="form-text">Újszövetségi olvasmány</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="ps" class="form-label">
+                            <i class="bi bi-music-note text-info"></i> Zsoltár
+                        </label>
+                        <input type="text" class="form-control" id="ps" name="ps" 
+                               value="{{ day_data.ps or '' }}"
+                               placeholder="pl. Zsoltár 1">
+                        <div class="form-text">Zsoltár</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="pr" class="form-label">
+                            <i class="bi bi-lightbulb text-warning"></i> Példabeszédek
+                        </label>
+                        <input type="text" class="form-control" id="pr" name="pr" 
+                               value="{{ day_data.pr or '' }}"
+                               placeholder="pl. Példabeszédek 1:1-7">
+                        <div class="form-text">Példabeszédek részlet</div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Mentés
+                        </button>
+                        <a href="{{ url_for('admin.edit_readings', plan_id=plan.id) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Vissza
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Segítség</h6>
+            </div>
+            <div class="card-body">
+                <h6>Formátum példák:</h6>
+                <ul class="small">
+                    <li><code>1Mózes 1-3</code> - több fejezet</li>
+                    <li><code>Máté 5:1-26</code> - versek tartomány</li>
+                    <li><code>Zsoltár 119:1-24</code> - zsoltár versek</li>
+                    <li><code>Példabeszédek 1:1-7</code> - versek</li>
+                </ul>
+                <h6 class="mt-3">Könyv rövidítések:</h6>
+                <p class="small text-muted">
+                    A szentiras.eu API által támogatott könyvneveket használd.
+                    Pl.: 1Mózes, 2Mózes, Zsoltár, Máté, Márk, Lukács, János, stb.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

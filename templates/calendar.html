@@ -49,7 +49,7 @@
                               {{ 'has-reading' if day.has_reading else 'no-reading' }}
                               {{ 'is-read' if day.is_read else '' }}
                               {{ 'is-today' if day.is_today else '' }}"
-                       title="{{ day.date_str }}">
+                       title="{{ day.day_number ~ '. nap' if day.day_number else day.date_str }}">
                         {{ day.day }}
                         {% if day.is_read %}
                         <span class="read-check">✓</span>
