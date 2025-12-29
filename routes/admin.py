@@ -194,9 +194,29 @@ def delete_plan_view(plan_id):
 # ===========================================
 
 import json
+import re
+
+def validate_plan_file(plan_file):
+    """
+    Validate plan_file to prevent path traversal attacks.
+    Only allows filenames with alphanumeric characters, underscores, hyphens, and .json extension.
+    """
+    if not plan_file:
+        raise ValueError("Plan file name cannot be empty")
+    
+    # Check for path traversal sequences
+    if '..' in plan_file or '/' in plan_file or '\\' in plan_file:
+        raise ValueError("Invalid plan file name: path traversal characters detected")
+    
+    # Only allow safe characters: alphanumeric, underscore, hyphen, and .json extension
+    if not re.match(r'^[a-zA-Z0-9_-]+\.json$', plan_file):
+        raise ValueError("Invalid plan file name: must contain only alphanumeric characters, underscores, hyphens, and .json extension")
+    
+    return True
 
 def load_plan_file(plan_file):
     """Olvasási terv fájl betöltése"""
+    validate_plan_file(plan_file)
     plan_path = os.path.join(os.path.dirname(Config.READING_PLAN_PATH), plan_file)
     if os.path.exists(plan_path):
         with open(plan_path, 'r', encoding='utf-8') as f:
@@ -205,6 +225,7 @@ def load_plan_file(plan_file):
 
 def save_plan_file(plan_file, data):
     """Olvasási terv fájl mentése"""
+    validate_plan_file(plan_file)
     plan_path = os.path.join(os.path.dirname(Config.READING_PLAN_PATH), plan_file)
     with open(plan_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
