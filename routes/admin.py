@@ -8,6 +8,7 @@ from models.database import (
 )
 from config import Config
 import os
+import re
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -208,7 +209,6 @@ def validate_plan_file(plan_file):
         raise ValueError("Plan file cannot contain path traversal sequences")
     
     # Only allow alphanumeric characters, dots, underscores, and hyphens
-    import re
     if not re.match(r'^[a-zA-Z0-9_\-\.]+$', plan_file):
         raise ValueError("Plan file contains invalid characters")
     
@@ -222,7 +222,13 @@ def validate_plan_file(plan_file):
     resolved_path = os.path.abspath(plan_path)
     resolved_base = os.path.abspath(base_dir)
     
-    if not resolved_path.startswith(resolved_base + os.sep):
+    # Use os.path.commonpath to safely check if path is within base directory
+    try:
+        common = os.path.commonpath([resolved_base, resolved_path])
+        if common != resolved_base:
+            raise ValueError("Plan file path is outside the allowed directory")
+    except ValueError:
+        # commonpath raises ValueError if paths are on different drives on Windows
         raise ValueError("Plan file path is outside the allowed directory")
     
     return plan_file
