@@ -8,6 +8,8 @@ from models.database import (
 )
 from config import Config
 import os
+import json
+import re
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -193,9 +195,6 @@ def delete_plan_view(plan_id):
 # Olvasási terv tartalom szerkesztése
 # ===========================================
 
-import json
-import re
-
 def validate_plan_file(plan_file):
     """
     Validate plan_file to prevent path traversal attacks.
@@ -209,8 +208,9 @@ def validate_plan_file(plan_file):
         raise ValueError("Invalid plan file name: path traversal characters detected")
     
     # Only allow safe characters: alphanumeric, underscore, hyphen, and .json extension
-    if not re.match(r'^[a-zA-Z0-9_-]+\.json$', plan_file):
-        raise ValueError("Invalid plan file name: must contain only alphanumeric characters, underscores, hyphens, and .json extension")
+    # Filename must start with alphanumeric character to avoid command-line option confusion
+    if not re.match(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*\.json$', plan_file):
+        raise ValueError("Invalid plan file name: must start with alphanumeric character and contain only alphanumeric characters, underscores, hyphens, and .json extension")
     
     return True
 
