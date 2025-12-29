@@ -45,7 +45,7 @@
                         <td>
                             <span class="badge bg-info">{{ plan.user_count }} fő</span>
                         </td>
-                        <td>{{ plan.created_at[:10] if plan.created_at else '-' }}</td>
+                        <td>{{ plan.created_at|date }}</td>
                         <td>
                             <a href="{{ url_for('admin.edit_plan', plan_id=plan.id) }}" 
                                class="btn btn-sm btn-outline-primary">
