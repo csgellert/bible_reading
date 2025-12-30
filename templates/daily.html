@@ -440,33 +440,6 @@
             </div>
         </div>
 
-        <!-- Felhasználóváltás -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h6 class="mb-0"><i class="bi bi-people"></i> Felhasználóváltás</h6>
-            </div>
-            <div class="card-body">
-                <form action="{{ url_for('auth.switch_user') }}" method="POST">
-                    <div class="input-group">
-                        <select class="form-select" name="username">
-                            {% for user in users %}
-                            <option value="{{ user.name }}" 
-                                    {{ 'selected' if user.id == session.user_id else '' }}>
-                                {{ user.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <button type="submit" class="btn btn-secondary">
-                            <i class="bi bi-arrow-repeat"></i>
-                        </button>
-                    </div>
-                </form>
-                <small class="text-muted">
-                    Vagy <a href="{{ url_for('auth.logout') }}">jelentkezz ki</a> új névvel.
-                </small>
-            </div>
-        </div>
-
         <!-- Gyors statisztika -->
         <div class="card">
             <div class="card-header">
