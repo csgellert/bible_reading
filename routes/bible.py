@@ -103,6 +103,13 @@ def get_date_string(date_str):
     except:
         return date_str
 
+
+@bible_bp.route('/adatvedelem')
+def privacy():
+    """Adatvédelmi tájékoztató"""
+    return render_template('privacy.html')
+
+
 @bible_bp.route('/')
 @login_required
 def index():
@@ -194,6 +201,9 @@ def daily(date_str=None):
     # Lista formátum készítése
     readings_list = []
     
+    # Epoch adatok kinyerése (ha van)
+    epoch_data = daily_readings_raw.get('epoch', None)
+    
     # Ha a readings már lista formátumú (sections kulccsal)
     if 'sections' in daily_readings_raw:
         readings_list = daily_readings_raw['sections']
@@ -268,6 +278,7 @@ def daily(date_str=None):
                          day_number=day_number,
                          date_display=date_display,
                          readings=readings_list,
+                         epoch=epoch_data,
                          comments=comments,
                          highlights=highlights,
                          is_read=is_read,

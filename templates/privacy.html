@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Adatvédelmi Tájékoztató - Bibliaolvasási Terv{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-shield-check"></i> Adatvédelmi Tájékoztató</h4>
+            </div>
+            <div class="card-body privacy-content">
+                <p class="text-muted"><small>Utolsó frissítés: 2025. január 1.</small></p>
+                
+                <h5>1. Adatkezelő</h5>
+                <p>A Bibliaolvasási Terv weboldal (a továbbiakban: "Szolgáltatás") egy nem kereskedelmi célú, közösségi bibliaolvasási platform. A Szolgáltatásból semmilyen bevétel nem származik.</p>
+                
+                <h5>2. Kezelt személyes adatok</h5>
+                <p>A Szolgáltatás használata során az alábbi személyes adatokat kezeljük:</p>
+                <ul>
+                    <li><strong>Felhasználónév:</strong> Az olvasási csoport tagjainak megkülönböztetésére szolgál.</li>
+                    <li><strong>Olvasási előrehaladás:</strong> A napi olvasmányok teljesítésének nyomon követése.</li>
+                    <li><strong>Megjegyzések és kiemelések:</strong> A felhasználók által önkéntesen megadott szöveges tartalmak.</li>
+                </ul>
+                <p><strong>Nem gyűjtünk:</strong> e-mail címet, jelszót (nem személyes belépési kód), telefonszámot, helyadatot, böngészési előzményeket harmadik fél oldalakról.</p>
+                
+                <h5>3. Az adatkezelés célja és jogalapja</h5>
+                <p>Az adatkezelés célja a közösségi bibliaolvasási élmény biztosítása. A jogalap a felhasználó önkéntes hozzájárulása (GDPR 6. cikk (1) bekezdés a) pont), amelyet a Szolgáltatás használatának megkezdésével ad meg.</p>
+                
+                <h5>4. Adattárolás</h5>
+                <p>Az adatokat a <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a> felhőalapú adatbázis szolgáltatásban tároljuk, amely az Európai Unió területén található szervereket használ, és megfelel a GDPR követelményeinek.</p>
+                
+                <h5>5. Adattovábbítás</h5>
+                <p>Személyes adatait harmadik félnek nem adjuk át, nem értékesítjük, és marketing célokra nem használjuk fel.</p>
+                
+                <h5>6. Adatmegőrzési idő</h5>
+                <p>Az adatokat a felhasználó kérésére töröljük, vagy ha a csoport adminisztrátora megszünteti a csoportot. Aktív használat esetén az adatok korlátlan ideig megőrzésre kerülnek.</p>
+                
+                <h5>7. Felhasználói jogok</h5>
+                <p>A GDPR alapján Önnek joga van:</p>
+                <ul>
+                    <li>Hozzáférni a személyes adataihoz</li>
+                    <li>Kérni az adatok helyesbítését vagy törlését</li>
+                    <li>Korlátozni vagy tiltakozni az adatkezelés ellen</li>
+                    <li>Adathordozhatóságot kérni</li>
+                </ul>
+                <p>Jogai gyakorlásához forduljon a csoport adminisztrátorához.</p>
+                
+                <h5>8. Sütik (cookie-k)</h5>
+                <p>A Szolgáltatás kizárólag <strong>technikai működéshez szükséges sütiket</strong> használ:</p>
+                <ul>
+                    <li><strong>Munkamenet süti (session):</strong> A bejelentkezési állapot fenntartására szolgál. A böngésző bezárásakor törlődik.</li>
+                    <li><strong>Cookie hozzájárulás:</strong> Megjegyzi, hogy elfogadta a sütik használatát. 1 évig érvényes.</li>
+                </ul>
+                <p>Harmadik féltől származó sütiket (analytics, reklám, közösségi média) <strong>nem használunk</strong>.</p>
+                
+                <h5>9. Adatbiztonság</h5>
+                <p>Az adatok védelme érdekében HTTPS titkosítást és biztonságos adatbázis-kapcsolatot alkalmazunk.</p>
+                
+                <h5>10. Kapcsolat</h5>
+                <p>Adatvédelmi kérdéseivel forduljon a csoport adminisztrátorához.</p>
+                
+                <hr>
+                <p class="text-muted small mb-0">Ez a tájékoztató az Európai Unió Általános Adatvédelmi Rendeletének (GDPR) megfelelően készült.</p>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3">
+            <a href="{{ url_for('bible.index') if session.authenticated else url_for('auth.login') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Vissza
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
