@@ -100,7 +100,8 @@ def create_plan_view():
     plan_files = []
     if os.path.exists(data_dir):
         for f in os.listdir(data_dir):
-            if f.endswith('.json') and 'plan' in f.lower():
+            # Minden JSON fájl megjelenítése, kivéve a technikai fájlokat
+            if f.endswith('.json') and not f.startswith('.'):
                 plan_files.append(f)
     
     if not plan_files:

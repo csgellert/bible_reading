@@ -24,6 +24,13 @@
                 {% if date_str == today %}
                 <span class="badge bg-success">Ma</span>
                 {% endif %}
+                {% if epoch %}
+                <div class="epoch-badge mt-2">
+                    <span class="badge px-3 py-2" style="background-color: {{ epoch.bg }}; color: {{ epoch.color }}; border: 2px solid {{ epoch.color }}; font-size: 0.9rem;">
+                        <i class="bi bi-clock-history me-1"></i> {{ epoch.name }}
+                    </span>
+                </div>
+                {% endif %}
             </div>
             
             <div>

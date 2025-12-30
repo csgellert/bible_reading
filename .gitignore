@@ -22,9 +22,11 @@ wheels/
 
 # test and utility files
 migrate_db.py
+convert_podcast_plan.py
 READING_PLAN_FORMAT.md
 migrations/
 DEPLOY.md
+*.pdf
 # Virtual Environment
 .venv/
 venv/
