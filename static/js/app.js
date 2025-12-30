@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupTextToggle();
     setupTextSelection();
     setupTranslationSelector();
+    setupCookieConsent();
     
     // Biblia versek betöltése
     loadBibleVerses();
@@ -1130,5 +1131,25 @@ async function deleteReply(replyId, button) {
     } catch (error) {
         console.error('Hiba a válasz törlésekor:', error);
         alert('Nem sikerült törölni a választ hálózati vagy szerver hiba miatt. Kérlek, próbáld meg később újra.');
+    }
+}
+
+// Cookie consent kezelése
+function setupCookieConsent() {
+    const consentBanner = document.getElementById('cookieConsent');
+    const acceptBtn = document.getElementById('acceptCookies');
+    
+    if (!consentBanner) return;
+    
+    // Ellenőrizzük, hogy a felhasználó már elfogadta-e
+    if (!localStorage.getItem('cookieConsent')) {
+        consentBanner.style.display = 'block';
+    }
+    
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', function() {
+            localStorage.setItem('cookieConsent', 'accepted');
+            consentBanner.style.display = 'none';
+        });
     }
 }

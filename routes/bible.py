@@ -103,6 +103,13 @@ def get_date_string(date_str):
     except:
         return date_str
 
+
+@bible_bp.route('/adatvedelem')
+def privacy():
+    """Adatvédelmi tájékoztató"""
+    return render_template('privacy.html')
+
+
 @bible_bp.route('/')
 @login_required
 def index():
