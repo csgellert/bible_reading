@@ -420,17 +420,23 @@ async function saveSelectionHighlight() {
 
 function getCurrentDateString() {
     const now = new Date();
+    const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    return `${month}-${day}`;
+    return `${year}-${month}-${day}`;
 }
 
 function getDateFromUrl() {
     const pathParts = window.location.pathname.split('/');
     const lastPart = pathParts[pathParts.length - 1];
-    // Ellenőrizzük, hogy dátum formátum-e (MM-DD)
-    if (/^\d{2}-\d{2}$/.test(lastPart)) {
+    // Ellenőrizzük, hogy dátum formátum-e (YYYY-MM-DD)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(lastPart)) {
         return lastPart;
+    }
+    // Régi MM-DD formátum támogatása (konvertálás YYYY-MM-DD-re)
+    if (/^\d{2}-\d{2}$/.test(lastPart)) {
+        const year = new Date().getFullYear();
+        return `${year}-${lastPart}`;
     }
     return getCurrentDateString();
 }
