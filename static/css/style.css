@@ -584,8 +584,10 @@ a:hover {
     color: var(--color-text);
     border-radius: var(--radius-sm);
     position: relative;
-    transition: var(--transition);
     font-weight: 500;
+    /* GPU gyorsítás és egyszerűbb transition */
+    will-change: background-color;
+    transition: background-color 0.15s ease;
 }
 
 .calendar-day.has-reading {
@@ -608,9 +610,6 @@ a:hover {
 }
 
 .calendar-day:hover {
-    transform: scale(1.1);
-    z-index: 1;
-    box-shadow: var(--shadow-md);
     background-color: var(--color-primary-light);
     color: #fff;
 }

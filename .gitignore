@@ -26,6 +26,9 @@ convert_podcast_plan.py
 READING_PLAN_FORMAT.md
 migrations/
 DEPLOY.md
+create_indexes_supabase.sql
+migrate_dates.py
+migrate_dates_supabase.sql
 *.pdf
 # Virtual Environment
 .venv/
