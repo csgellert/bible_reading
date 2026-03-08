@@ -113,8 +113,9 @@ if __name__ == '__main__':
     
     print(f"Biblia forrás: {source}")
     if source == 'api':
+        api_url = os.environ.get('BIBLE_API_URL') or Config.BIBLE_API_URL
         print(f"Fordítás: {translation}")
-        print(f"API: https://szentiras.eu")
+        print(f"API: {api_url}")
     else:
         print("Helyi adatbázis (még nincs implementálva)")
     print(f"Szerver: http://{args.host}:{args.port}")

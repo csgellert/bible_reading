@@ -557,7 +557,7 @@ def api_bible_source():
     return jsonify({
         'source': current_app.config.get('BIBLE_SOURCE', 'api'),
         'translation': current_app.config.get('BIBLE_TRANSLATION', 'SZIT'),
-        'api_url': current_app.config.get('BIBLE_API_URL', 'https://szentiras.eu/api')
+        'api_url': current_app.config.get('BIBLE_API_URL', 'https://szentiras.hu/api')
     })
 
 
@@ -649,6 +649,31 @@ def my_notes():
                          total_comments=total_comments,
                          total_highlights=total_highlights,
                          username=session.get('username'))
+
+
+@bible_bp.route('/export/highlights.pdf')
+@login_required
+def export_highlights_pdf():
+    """Kiemelések exportálása PDF-be"""
+    from flask import make_response
+    from services.pdf_export import generate_highlights_pdf
+
+    user_id = session.get('user_id')
+    plan_id = session.get('plan_id')
+    username = session.get('username', 'Felhasználó')
+    plan_name = session.get('plan_name', 'Bibliaolvasási Terv')
+
+    highlights = get_user_highlights(user_id, plan_id)
+
+    def day_number_fn(date_str):
+        return get_day_number(date_str, plan_id)
+
+    pdf_bytes = generate_highlights_pdf(highlights, username, plan_name, day_number_fn)
+
+    response = make_response(pdf_bytes)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'attachment; filename="kiemeleseim.pdf"'
+    return response
 
 
 # ==========================================
