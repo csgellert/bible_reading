@@ -43,6 +43,9 @@ env/
 *.swo
 *~
 
+# Reading plan JSON files (provided via GCS volume mount on Cloud Run)
+data/*.json
+
 # Database
 *.db
 *.sqlite3
