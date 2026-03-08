@@ -259,23 +259,37 @@ a:hover {
     opacity: 0.8;
 }
 
-/* Szakasz címek (API-ból jövő fejlécek) */
+/* Fő szakasz címek - CSUPA NAGYBETŰS könyvrész címek */
+.section-heading {
+    display: block;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--color-primary);
+    margin: 1.5rem 0 0.15rem 0;
+    padding: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.3;
+    letter-spacing: 0.08em;
+    opacity: 0.7;
+}
+
+/* Szakasz alcímek (pl. "Jézus ősei.", "A napkeleti bölcsek.") */
 .section-title {
     display: block;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 1rem;
     color: var(--color-primary-dark);
-    margin: 0.75rem 0 0.25rem 0;
+    margin: 1rem 0 0.3rem 0;
     padding: 0;
     border-bottom: none;
     font-family: 'Segoe UI', system-ui, sans-serif;
     line-height: 1.3;
+    letter-spacing: 0.01em;
 }
 
-.verse .section-title {
-    display: inline-block;
-    margin-right: 0.5rem;
-    margin-bottom: 0;
+/* Ha fő cím után jön az alcím, kevesebb margó kell felül */
+.section-heading + .section-title {
+    margin-top: 0.25rem;
 }
 
 /* Fejezet számok (több fejezet esetén, inline megjelenítés) */

@@ -49,34 +49,48 @@ def get_available_translations():
 
 def process_verse_html(text):
     """
-    Feldolgozza a vers szöveget, megtartva a fontos HTML elemeket.
+    Feldolgozza a vers szöveget.
     
-    - <h5>, <h4>, stb. -> szakasz cím (vastagított)
-    - <i>, <em> -> dőlt
-    - Többi HTML tag eltávolítása
+    A szentiras.eu API sima szövegként adja vissza az alcímeket,
+    beolvasztva a vers szövegébe, szóköz nélkül.
+    Pl.: "I. JÉZUS KRISZTUS SZÜLETÉSE ÉS GYERMEKKORAJézus ősei.Jézus Krisztus, ..."
+    
+    Ez a függvény kiszedi és <span> elemekké alakítja őket.
     """
     if not text:
         return ''
     
-    # Fejléc tagek átalakítása span-ra vastagított címként
-    # <h5>Cím</h5> -> <span class="section-title">Cím</span>
-    text = re.sub(
-        r'<h[1-6][^>]*>(.*?)</h[1-6]>',
-        r'<span class="section-title">\1</span> ',
-        text,
-        flags=re.IGNORECASE | re.DOTALL
+    # HTML tagek eltávolítása (az új API nem küld HTML-t, de biztos ami biztos)
+    text = re.sub(r'<[^>]+>', '', text)
+    
+    parts = []
+    
+    # 1. Fő cím: CSUPA NAGYBETŰS szöveg az elején (pl. "I. JÉZUS KRISZTUS SZÜLETÉSE ÉS GYERMEKKORA")
+    _upper = r'A-ZÁÉÍÓÖŐÚÜŰ'
+    _lower = r'a-záéíóöőúüű'
+    major_match = re.match(
+        rf'^((?:[IVXLC]+\.?\s*)?[{_upper}][{_upper}\s,\'\-]*[{_upper}])(?=[{_upper}](?:[{_lower}]|\s[{_lower}]))',
+        text
     )
+    if major_match:
+        heading_text = major_match.group(1).strip()
+        alpha_chars = [c for c in heading_text if c.isalpha()]
+        if len(alpha_chars) >= 3 and all(c.isupper() for c in alpha_chars):
+            parts.append(f'<span class="section-heading">{heading_text}</span>')
+            text = text[major_match.end():]
     
-    # Dőlt tagek megtartása
-    text = re.sub(r'<(em|i)>(.*?)</(em|i)>', r'<em>\2</em>', text, flags=re.IGNORECASE)
+    # 2. Alcím: rövid mondat ponttal lezárva, közvetlenül nagybetű követi (pl. "Jézus ősei.")
+    subtitle_match = re.match(
+        rf'^([{_upper}][^.]{{1,80}}\.)(?=[{_upper}])',
+        text
+    )
+    if subtitle_match:
+        subtitle = subtitle_match.group(1)
+        parts.append(f'<span class="section-title">{subtitle}</span>')
+        text = text[subtitle_match.end():]
     
-    # Vastag tagek megtartása
-    text = re.sub(r'<(strong|b)>(.*?)</(strong|b)>', r'<strong>\2</strong>', text, flags=re.IGNORECASE)
-    
-    # Minden más HTML tag eltávolítása
-    text = re.sub(r'<(?!/?(?:em|strong|span)[^>]*>)[^>]+>', '', text)
-    
-    return text.strip()
+    parts.append(text)
+    return ''.join(parts)
 
 
 # Könyv nevek átalakítása az API formátumra
@@ -372,15 +386,17 @@ def format_verses_html(verses_data):
                 html_parts.append('<br><br>')
             current_chapter = chapter
         
-        # Ellenőrizzük, hogy van-e szakasz cím a szövegben
-        has_section_title = 'section-title' in text
+        # Szakasz címek kiemelése a vers szövegből és külön blokk elemként megjelenítése
+        while True:
+            m = re.search(r'<span class="section-(?:heading|title)">(.*?)</span>\s*', text)
+            if not m:
+                break
+            html_parts.append(m.group(0))
+            text = text[:m.start()] + text[m.end():]
+        text = text.strip()
         
         # Vers hozzáadása - data-ref attribútummal a teljes hivatkozáshoz
         if verse_num:
-            # Ha van szakasz cím, előtte új sor
-            if has_section_title and html_parts:
-                html_parts.append('<br>')
-            
             html_parts.append(
                 f'<span class="verse" data-verse="{verse_num}" data-ref="{ref}">'
                 f'<sup class="verse-num">{verse_num}</sup>{text}</span> '
