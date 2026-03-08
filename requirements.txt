@@ -4,3 +4,4 @@ requests>=2.28.0
 python-dotenv>=1.0.0
 psycopg2-binary>=2.9.0  # PostgreSQL support (Supabase, Render, etc.)
 gunicorn>=21.0.0  # Production WSGI server
+fpdf2>=2.8.0  # PDF export

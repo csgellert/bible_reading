@@ -55,4 +55,7 @@ class Config:
     BIBLE_TRANSLATION = os.environ.get('BIBLE_TRANSLATION', 'SZIT')
     
     # API alap URL
-    BIBLE_API_URL = os.environ.get('BIBLE_API_URL', 'https://szentiras.eu/api')
+    BIBLE_API_URL = os.environ.get('BIBLE_API_URL', 'https://szentiras.hu/api')
+    
+    # API kulcs (szentiras.hu)
+    BIBLE_API_KEY = os.environ.get('BIBLE_API_KEY', '')

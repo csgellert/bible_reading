@@ -1,6 +1,6 @@
 """
 Szentírás API szolgáltatás
-Forrás: https://szentiras.eu/api
+Forrás: https://szentiras.hu/api
 """
 
 import requests
@@ -196,7 +196,7 @@ def normalize_reference(reference):
 
 def fetch_verses_from_api(reference, translation='SZIT'):
     """
-    Lekéri a verseket a szentiras.eu API-ból.
+    Lekéri a verseket a szentiras.hu API-ból.
     
     Args:
         reference: Szentírási hivatkozás (pl. "1Mózes 1-3", "Mt5")
@@ -222,14 +222,21 @@ def fetch_verses_from_api(reference, translation='SZIT'):
             }
         
         # API URL összeállítása
-        url = f"https://szentiras.eu/api/idezet/{api_ref}/{translation}"
+        api_base = current_app.config.get('BIBLE_API_URL', 'https://szentiras.hu/api')
+        url = f"{api_base}/idezet/{api_ref}/{translation}"
         
         # Debug: kiírjuk a lekérdezést
         print(f"[DEBUG] API lekérdezés: {url}")
         print(f"[DEBUG] Eredeti hivatkozás: '{reference}' -> Normalizált: '{api_ref}'")
         
+        # API kulcs hozzáadása a fejléchez
+        headers = {}
+        api_key = current_app.config.get('BIBLE_API_KEY', '')
+        if api_key:
+            headers['X-API-Key'] = api_key
+        
         # Lekérés
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
         
         data = response.json()
@@ -241,7 +248,7 @@ def fetch_verses_from_api(reference, translation='SZIT'):
         verses = []
         full_reference = reference
         
-        # A szentiras.eu API válasz formátuma: { keres: {...}, valasz: { versek: [...] } }
+        # A szentiras.hu API válasz formátuma: { keres: {...}, valasz: { versek: [...] } }
         valasz = data.get('valasz', {})
         versek_list = valasz.get('versek', [])
         
