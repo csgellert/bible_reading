@@ -14,7 +14,7 @@ from models.database import (
     add_reaction, remove_reaction, has_user_reacted,
     add_comment_reply, get_replies_for_comment, delete_comment_reply,
     update_comment_privacy, update_highlight_privacy,
-    get_reactions_for_target
+    get_reactions_for_target, get_reactions_for_targets, get_replies_for_comments
 )
 from services.bible_api import fetch_verses_from_api, format_verses_html, get_available_translations
 
@@ -578,7 +578,7 @@ def api_translations():
 @bible_bp.route('/my-notes')
 @login_required
 def my_notes():
-    """Saját jegyzetek és kiemelések oldal"""
+    """Saját jegyzet~ek és kiemelések oldal"""
     user_id = session.get('user_id')
     plan_id = session.get('plan_id')
     
@@ -587,12 +587,15 @@ def my_notes():
     
     if view_type == 'comments':
         raw_notes = get_user_comments(user_id, plan_id)
-        # Átalakítjuk a comments formátumot az egységes megjelenítéshez
+        comment_ids = [note['id'] for note in raw_notes]
+        
+        # Batch query: összes válasz egyszerre
+        replies_map = get_replies_for_comments(comment_ids) if comment_ids else {}
+        # Batch query: összes reakció egyszerre
+        reactions_map = get_reactions_for_targets('comment', comment_ids) if comment_ids else {}
+        
         notes = []
         for note in raw_notes:
-            # Reakciók és válaszok lekérése
-            reactions = get_reactions_for_target('comment', note['id'])
-            replies = get_replies_for_comment(note['id'])
             notes.append({
                 'type': 'comment',
                 'id': note['id'],
@@ -603,16 +606,21 @@ def my_notes():
                 'color': None,
                 'created_at': note['created_at'],
                 'is_private': note.get('is_private', False),
-                'reaction_count': len(reactions),
-                'reply_count': len(replies)
+                'reaction_count': len(reactions_map.get(note['id'], [])),
+                'reply_count': len(replies_map.get(note['id'], []))
             })
+        total_comments = len(raw_notes)
+        total_highlights = len(get_user_highlights(user_id, plan_id))
+        
     elif view_type == 'highlights':
         raw_notes = get_user_highlights(user_id, plan_id)
-        # Átalakítjuk a highlights formátumot
+        highlight_ids = [note['id'] for note in raw_notes]
+        
+        # Batch query: összes reakció egyszerre
+        reactions_map = get_reactions_for_targets('highlight', highlight_ids) if highlight_ids else {}
+        
         notes = []
         for note in raw_notes:
-            # Reakciók lekérése
-            reactions = get_reactions_for_target('highlight', note['id'])
             notes.append({
                 'type': 'highlight',
                 'id': note['id'],
@@ -623,26 +631,34 @@ def my_notes():
                 'color': note.get('color', 'yellow'),
                 'created_at': note['created_at'],
                 'is_private': note.get('is_private', False),
-                'reaction_count': len(reactions)
+                'reaction_count': len(reactions_map.get(note['id'], []))
             })
+        total_comments = len(get_user_comments(user_id, plan_id))
+        total_highlights = len(raw_notes)
+        
     else:
         raw_notes = get_user_notes_combined(user_id, plan_id)
-        # Reakciók és válaszok hozzáadása a kombinált jegyzetekhez
+        comment_ids = [note['id'] for note in raw_notes if note['type'] == 'comment']
+        highlight_ids = [note['id'] for note in raw_notes if note['type'] == 'highlight']
+        
+        # Batch queries: összes reakció és válasz egyszerre
+        comments_reactions_map = get_reactions_for_targets('comment', comment_ids) if comment_ids else {}
+        highlights_reactions_map = get_reactions_for_targets('highlight', highlight_ids) if highlight_ids else {}
+        replies_map = get_replies_for_comments(comment_ids) if comment_ids else {}
+        
         notes = []
         for note in raw_notes:
-            reactions = get_reactions_for_target(note['type'], note['id'])
             note_data = dict(note)
-            note_data['reaction_count'] = len(reactions)
             if note['type'] == 'comment':
-                replies = get_replies_for_comment(note['id'])
-                note_data['reply_count'] = len(replies)
+                note_data['reaction_count'] = len(comments_reactions_map.get(note['id'], []))
+                note_data['reply_count'] = len(replies_map.get(note['id'], []))
             else:
+                note_data['reaction_count'] = len(highlights_reactions_map.get(note['id'], []))
                 note_data['reply_count'] = 0
             notes.append(note_data)
-    
-    # Statisztikák
-    total_comments = len(get_user_comments(user_id, plan_id))
-    total_highlights = len(get_user_highlights(user_id, plan_id))
+        
+        total_comments = len(comment_ids)
+        total_highlights = len(highlight_ids)
     
     return render_template('my_notes.html',
                          notes=notes,
