@@ -287,12 +287,29 @@ function handleTextSelectionMobile(container) {
     showSelectionPanel(selectedText, verseRef);
 }
 
+function getSelectionTextWithoutVerseNums(selection) {
+    // Szöveg kinyerése a verse-num elemek nélkül
+    const range = selection.getRangeAt(0);
+    const fragment = range.cloneContents();
+    // verse-num sup elemek eltávolítása
+    fragment.querySelectorAll('.verse-num').forEach(el => el.remove());
+    const div = document.createElement('div');
+    div.appendChild(fragment);
+    return div.textContent.trim();
+}
+
 function handleTextSelection(e) {
     const selection = window.getSelection();
-    const selectedText = selection.toString().trim();
+    const rawText = selection.toString().trim();
+    
+    if (rawText.length < 3) {
+        return; // Túl rövid kijelölés
+    }
+    
+    const selectedText = getSelectionTextWithoutVerseNums(selection);
     
     if (selectedText.length < 3) {
-        return; // Túl rövid kijelölés
+        return;
     }
     
     // Keressük meg a kijelölt verseket

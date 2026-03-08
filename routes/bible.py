@@ -46,9 +46,10 @@ def get_plan_start_date(plan_id):
     return Config.get_plan_start_date()
 
 
-def get_day_number(target_date, plan_id):
-    """Adott dátumhoz tartozó nap sorszámának kiszámítása"""
-    start_date = get_plan_start_date(plan_id)
+def get_day_number(target_date, plan_id, start_date=None):
+    """Adott dátumhoz tartozó nap sorszzámának kiszámítása"""
+    if start_date is None:
+        start_date = get_plan_start_date(plan_id)
     if isinstance(target_date, str):
         target_date = datetime.strptime(target_date, '%Y-%m-%d').date()
     delta = target_date - start_date
@@ -137,6 +138,7 @@ def index():
 def daily(date_str=None):
     """Napi olvasmány oldal"""
     plan_id = session.get('plan_id')
+    start_date = get_plan_start_date(plan_id)  # Egyszer lekérjük
     
     # Ha nincs dátum megadva, mai napot használjuk
     if date_str is None:
@@ -149,7 +151,6 @@ def daily(date_str=None):
                 target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             else:  # MM-DD (régi kompatibilitás)
                 # Használjuk az aktuális évet vagy a terv kezdő évét
-                start_date = get_plan_start_date(plan_id)
                 month, day = map(int, date_str.split('-'))
                 target_date = date(start_date.year, month, day)
                 date_str = target_date.strftime('%Y-%m-%d')
@@ -164,8 +165,8 @@ def daily(date_str=None):
     out_of_range = False  # Jelzi, ha a dátum a terven kívül esik
     
     if is_numbered_plan(reading_plan):
-        # Számozott terv: kiszámoljuk a nap sorszámát
-        day_number = get_day_number(target_date, plan_id)
+        # Számozott terv: kiszámoljuk a nap sorszámát - átadunk start_date-et
+        day_number = get_day_number(target_date, plan_id, start_date)
         plan_key = str(day_number)
         
         # Terv maximális napjának meghatározása
@@ -336,8 +337,8 @@ def calendar():
                 current_date = date(current_month_start.year, current_month_start.month, d)
                 date_str = current_date.strftime('%Y-%m-%d')
                 
-                # Számoljuk ki a nap számát
-                day_num = get_day_number(current_date, plan_id)
+                # Szamoljuk ki a nap szamat - atadunk start_date-et a gyors szamitashoz
+                day_num = get_day_number(current_date, plan_id, start_date)
                 
                 # Ellenőrizzük, hogy ez a nap a terv része-e
                 has_reading = 1 <= day_num <= total_days and str(day_num) in reading_plan
@@ -664,9 +665,10 @@ def export_highlights_pdf():
     plan_name = session.get('plan_name', 'Bibliaolvasási Terv')
 
     highlights = get_user_highlights(user_id, plan_id)
+    start_date = get_plan_start_date(plan_id)  # Egyszer lekérjük
 
     def day_number_fn(date_str):
-        return get_day_number(date_str, plan_id)
+        return get_day_number(date_str, plan_id, start_date)
 
     pdf_bytes = generate_highlights_pdf(highlights, username, plan_name, day_number_fn)
 
