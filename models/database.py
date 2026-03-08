@@ -988,6 +988,63 @@ def get_replies_for_comment(parent_comment_id):
     return replies
 
 
+def get_reactions_for_targets(target_type, target_ids):
+    """Reakciók lekérése több célhoz egyszerre (N+1 probléma elkerülése)"""
+    if not target_ids:
+        return {}
+    
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+    
+    # Placeholder-ek generálása
+    placeholders = ','.join([placeholder() for _ in target_ids])
+    
+    cursor.execute(f'''
+        SELECT r.*, u.name as user_name
+        FROM reactions r
+        JOIN users u ON r.user_id = u.id
+        WHERE r.target_type = {placeholder()} AND r.target_id IN ({placeholders})
+    ''', [target_type] + target_ids)
+    
+    reactions = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    
+    # Szótározat: target_id -> [reactions]
+    result = {tid: [] for tid in target_ids}
+    for reaction in reactions:
+        result[reaction['target_id']].append(reaction)
+    return result
+
+
+def get_replies_for_comments(parent_comment_ids):
+    """Válaszok lekérése több kommenthez egyszerre (N+1 probléma elkerülése)"""
+    if not parent_comment_ids:
+        return {}
+    
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+    
+    # Placeholder-ek generálása
+    placeholders = ','.join([placeholder() for _ in parent_comment_ids])
+    
+    cursor.execute(f'''
+        SELECT r.*, u.name as user_name
+        FROM comment_replies r
+        JOIN users u ON r.user_id = u.id
+        WHERE r.parent_comment_id IN ({placeholders})
+        ORDER BY r.created_at ASC
+    ''', parent_comment_ids)
+    
+    replies = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    
+    # Szótározat: parent_comment_id -> [replies]
+    result = {cid: [] for cid in parent_comment_ids}
+    for reply in replies:
+        result[reply['parent_comment_id']].append(reply)
+    return result
+
+
 def delete_comment_reply(reply_id, user_id):
     """Válasz törlése (csak a saját válaszok)"""
     conn = get_db_connection()

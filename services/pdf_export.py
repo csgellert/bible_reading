@@ -121,28 +121,25 @@ def generate_highlights_pdf(highlights, username, plan_name, day_number_fn=None)
             text = _strip_verse_numbers(item.get('text', ''))
             
             # Igehely és szöveg egy blokkban
-            x_start = 14
-            pdf.set_x(x_start)
-            
-            # Arany vonal + idézet blokk
-            pdf.set_draw_color(*C_ACCENT)
-            pdf.set_line_width(0.4)
-            y_before = pdf.get_y()
+            x_start = 13  # Arany szegély pozíciója
+            x_content = 15  # Szöveg pozíciója
             
             if verse_ref:
-                pdf.set_x(x_start + 2)
+                pdf.set_x(x_content)
                 pdf.set_font('DejaVu', 'B', 8)
                 pdf.set_text_color(*C_PRIMARY)
                 pdf.cell(0, 4.5, verse_ref, new_x='LMARGIN', new_y='NEXT')
             
-            pdf.set_x(x_start + 2)
+            # Szöveg téglalappal és baloldali arany szegéllyel
+            pdf.set_x(x_content)
             pdf.set_font('DejaVu', '', 8.5)
             pdf.set_text_color(*C_TEXT)
-            pdf.multi_cell(178, 4.5, f'\u201e{text}\u201d', new_x='LMARGIN', new_y='NEXT')
-            y_after = pdf.get_y()
+            pdf.set_draw_color(*C_ACCENT)  # Arany
+            pdf.set_line_width(0.4)
             
-            # Arany bal szegély
-            pdf.line(x_start, y_before, x_start, y_after)
+            # border='L' automatikusan rajzolja a baloldali szegélyt az oldaltöréseknél is
+            pdf.multi_cell(175, 4.5, f'\u201e{text}\u201d', border='L', 
+                          new_x='LMARGIN', new_y='NEXT')
             
             pdf.ln(2)
         
