@@ -44,7 +44,7 @@ env/
 *~
 
 # Reading plan JSON files (provided via GCS volume mount on Cloud Run)
-#data/*.json
+data/*.json
 
 # Database
 *.db
